@@ -125,6 +125,39 @@ coast <- map_dfr(names(RESPONSES), function(resp) {
 }) %>% mutate(p_holm = p.adjust(p, "holm"))
 write_tab(coast, "confirmatory_coastwide_index")
 
+# ── Robustness of the BEUTI result (sensitivity v) ──────────────────────────
+# Coastwide pre-recruit index (as above) vs BEUTI May–Aug at 47N (and CUTI as a
+# transport-only analogue) under alternative ways of removing low-frequency
+# variation, leave-one-year-out, and with the most influential year removed.
+idx_pre <- model_data("log_pre_next") %>%
+  group_by(beach) %>% mutate(res = zs(resid(lm(y ~ spawn_c + doy_c)))) %>% ungroup() %>%
+  group_by(year_class) %>% summarise(index = mean(res), .groups = "drop")
+env_m <- read_csv(file.path(DERIVED, "env_monthly.csv"), show_col_types = FALSE)
+ann <- env_m %>% filter(month %in% 5:8) %>% group_by(year) %>%
+  summarise(beuti = mean(beuti_47N), cuti = mean(cuti_47N), .groups = "drop")
+rb <- idx_pre %>% left_join(ann, by = c("year_class" = "year")) %>% drop_na() %>% arrange(year_class)
+
+rob_one <- function(d, var) {
+  x <- zs(d[[var]]); y <- d$index; t <- d$year_class
+  lin <- summary(lm(y ~ t + x))$coefficients["x", ]
+  lo_x <- resid(loess(x ~ t, span = 0.75)); lo_y <- resid(loess(y ~ t, span = 0.75))
+  ct_lo <- cor.test(lo_x, lo_y)
+  fd <- summary(lm(diff(y) ~ diff(x)))$coefficients[2, ]
+  loo <- sapply(seq_len(nrow(d)), function(i) coef(lm(y[-i] ~ t[-i] + x[-i]))[3])
+  infl <- d$year_class[which.max(abs(loo - lin[1]))]
+  ex <- d %>% filter(year_class != infl)
+  exc <- summary(lm(index ~ year_class + zs(ex[[var]]), data = ex))$coefficients[3, ]
+  tibble(variable = var, n = nrow(d),
+         linear_detrend_est = lin[[1]], linear_detrend_p = lin[[4]],
+         loess_detrend_r = unname(ct_lo$estimate), loess_detrend_p = ct_lo$p.value,
+         first_diff_est = fd[[1]], first_diff_p = fd[[4]],
+         loo_min = min(loo), loo_max = max(loo), loo_all_negative = all(loo < 0),
+         most_influential_year = infl, without_influential_est = exc[[1]], without_influential_p = exc[[4]],
+         post2003_est = summary(lm(index ~ year_class + zs(get(var)), data = filter(d, year_class >= 2003)))$coefficients[3, 1],
+         post2003_p = summary(lm(index ~ year_class + zs(get(var)), data = filter(d, year_class >= 2003)))$coefficients[3, 4])
+}
+write_tab(bind_rows(rob_one(rb, "beuti"), rob_one(rb, "cuti")), "confirmatory_beuti_robustness")
+
 # ── Beach-specific GLS-AR(1) (sensitivity iv) ───────────────────────────────
 by_beach <- map_dfr(names(RESPONSES), function(resp) {
   d <- model_data(resp)

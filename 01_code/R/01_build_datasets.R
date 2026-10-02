@@ -69,15 +69,14 @@ sl_by_year <- sl %>%
                 ~ if_else(is.infinite(.x), as.Date(NA), .x)),
          survey_doy = if_else(is.nan(survey_doy), NA_real_, survey_doy))
 
-# Fill the two beach-years without usable dates with that beach's median doy
-sl_by_year <- sl_by_year %>%
+survey <- season %>%
+  full_join(sl_by_year, by = c("beach", "survey_year")) %>%
+  # Beach-years without usable dates (Kalaloch 2001: no dates; Copalis 2003: no
+  # length records at all) get that beach's median survey day of year.
   group_by(beach) %>%
   mutate(survey_doy_imputed = is.na(survey_doy),
          survey_doy = if_else(is.na(survey_doy), median(survey_doy, na.rm = TRUE), survey_doy)) %>%
-  ungroup()
-
-survey <- season %>%
-  full_join(sl_by_year, by = c("beach", "survey_year")) %>%
+  ungroup() %>%
   mutate(beach = factor(beach, levels = BEACHES)) %>%
   arrange(beach, survey_year) %>%
   mutate(pre_density = pre_recruits / habitat_m2,

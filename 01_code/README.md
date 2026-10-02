@@ -1,0 +1,46 @@
+# 01_code
+
+All analysis code. Run everything from the **repository root** (the folder with `recruitment-analysis.Rproj`).
+
+## `R/`: robust re-analysis pipeline (primary)
+
+`Rscript 01_code/R/run_all.R` runs the scripts in order (~3 min). Outputs go to `02_data/derived/` and `03_analyses/robust-reanalysis/`.
+
+| Script | Purpose | Main outputs |
+|---|---|---|
+| `00_config.R` | Paths, constants (beaches, SST buoys, seed, surrogate count), plot theme, helpers. Sourced by every script | none |
+| `01_build_datasets.R` | Parses abundance, shell lengths (3 date encodings), upwelling, discharge, PDO and a homogeneous regional SST anomaly. Defines the **five pre-specified, cohort-aligned predictors** | `02_data/derived/survey_beach_year.csv`, `env_monthly.csv`, `cohort_table.csv` |
+| `02_cohort_diagnostics.R` | Survey timing, length-frequency by survey date, pre-recruit(t) → recruit(t+1) linkage, synchrony, trends | `fig_survey_timing`, `fig_length_frequency`, `fig_cohort_linkage`; `survey_timing_by_beach`, `cohort_linkage`, `trends`, `synchrony_*` |
+| `lib_original_grid.R` | Re-implements the legacy notebook's monthly screening grid, including its quirks. Shared helper, not run directly | none |
+| `03_null_audit.R` | Checks the grid reproduces the committed notebook output. Calibrates its correlations against 2,000 multivariate phase-randomized surrogates; FDR; detrended and effective-n re-tests of the 20 predictors the notebook selected | `fig_null_audit`; `null_audit_*` |
+| `04_confirmatory_models.R` | Pre-specified tests: pooled LMM with random year-class effect, trend, spawners and survey date; Holm correction. Sensitivity: no trend, no Kalaloch, coastwide GLS-AR(1), beach-specific GLS-AR(1) | `fig_confirmatory_forest`, `fig_beach_heterogeneity`; `confirmatory_*` |
+| `05_window_scan.R` | Exploratory climwin-style scan (1–4 month windows, 5 variables) with family-wise error from surrogates | `fig_window_scan_pre/rec`; `window_scan_*` |
+| `06_forecast_skill.R` | Rolling-origin forecasts. Compares climatology, persistence, stock carry-over, leaky vs honest predictor selection, and the pre-specified BEUTI model | `fig_forecast_skill`; `forecast_skill_*` |
+| `07_figures_overview.R` | Study-area map, abundance and predictor time series | `fig_study_area`, `fig_abundance_timeseries`, `fig_predictor_timeseries` |
+| `run_all.R` | Runs `01`–`07`; writes `sessionInfo.txt` | none |
+
+Figures are in `03_analyses/robust-reanalysis/figures/` (PNG, 300 dpi); tables are in `.../tables/` (CSV).
+
+**Packages:** tidyverse, readxl, lubridate, nlme, lme4, here, maps, mapdata.
+
+## `razor-clam-recruitment-analysis.Rmd`: legacy exploratory notebook
+
+This is the 26-section notebook (formerly `20260210-...-FIXED (7).Rmd`) that produced `03_analyses/20260322-recruitment-analysis/`. It was bug-fixed on 2026-10-02 (`task.md`, "Fixed"), but its design has the problems described in `docs/methodology-review.md`: lag alignment, multiplicity, trends and selection leakage. Use it for exploration and for reproducing earlier figures, **not** for manuscript inference.
+
+- **Toggles at the top.** `save_*` flags control which figure groups are written; `use_*` flags control which environmental factors enter the predictor catalog.
+- **Outputs.** Each run writes to `03_analyses/<today>-recruitment-analysis/` (created with `Sys.Date()`).
+- **Section map:**
+  - §1–2: setup.
+  - §3: data loading, including size-class abundance decomposition and optional downloads.
+  - §4: IDW temperature blending at monthly, half-monthly and weekly scales; salinity; discharge.
+  - §5–6: climatology plots.
+  - §7: seasonal indices.
+  - §8–13: lag-correlation screen, heatmaps, scatter, bars, corrplots.
+  - §14–17: ACF, spectra, pre-whitening.
+  - §18: predictive models.
+  - §19–20: synthesis and window plots.
+  - §21–26: shell-length / size-class analyses, models and cohort tracking.
+
+## `archive/`
+
+Earlier notebook versions 2–6, kept for history (see `archive/README.md`).

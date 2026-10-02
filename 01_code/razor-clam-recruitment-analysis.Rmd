@@ -7,7 +7,17 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+# All paths below are relative to the repository root (the folder containing
+# recruitment-analysis.Rproj). Knit from there regardless of where this file lives.
+knitr::opts_knit$set(root.dir = here::here())
 ```
+
+> **Status (2026-10):** exploratory notebook. A methodological review
+> (`docs/methodology-review.md`) found that several of its inferences do not
+> survive multiple-testing control, detrending, or honest cross-validation, and
+> that the age-class → lag mapping does not account for survey timing. The
+> confirmatory re-analysis lives in `01_code/R/` (run `Rscript 01_code/R/run_all.R`).
+> Bug fixes applied to this notebook are listed in `task.md` ("Fixed").
 
 ```{r}
 ## clear workspace
@@ -81,7 +91,9 @@ cat(paste0("  ", names(env_toggles), ": ", ifelse(env_toggles, "ON", "OFF"),
 
 ```{r message=FALSE, warning=FALSE}
 ## Load Packages
-load.lib<-c("dbplyr","tidyverse","readxl","openxlsx", "lubridate", "scales", "janitor", "officer", "flextable", "here", "corrplot", "patchwork", "dataRetrieval", "sf", "jsonlite") # List of required packages
+# dbplyr, janitor, officer and flextable were loaded but never used (removed 2026-10).
+# dataRetrieval is only needed when the Columbia discharge cache is missing (optional below).
+load.lib<-c("tidyverse","readxl","openxlsx", "lubridate", "scales", "here", "corrplot", "patchwork", "sf", "jsonlite") # List of required packages
 install.lib <- load.lib[!load.lib %in% installed.packages()] # Select missing packages
 for(lib in install.lib) install.packages(lib,dependencies=TRUE) # Install missing packages + dependencies
 sapply(load.lib,require,character=TRUE) # Load all packages.
@@ -89,7 +101,9 @@ sapply(load.lib,require,character=TRUE) # Load all packages.
 # dataRetrieval >= 2.7.16 required for read_waterdata_daily().
 # If you get errors, update from CRAN: install.packages("dataRetrieval")
 # Or from GitHub for latest: remotes::install_github("DOI-USGS/dataRetrieval")
-if (!exists("read_waterdata_daily", where = asNamespace("dataRetrieval"), inherits = FALSE)) {
+if (requireNamespace("dataRetrieval", quietly = TRUE)) library(dataRetrieval)
+if (!requireNamespace("dataRetrieval", quietly = TRUE) ||
+    !exists("read_waterdata_daily", where = asNamespace("dataRetrieval"), inherits = FALSE)) {
   cat("WARNING: read_waterdata_daily() not available in your dataRetrieval version.\n")
   cat("  Install latest: remotes::install_github('DOI-USGS/dataRetrieval')\n")
   cat("  Will fall back to direct USGS REST API (requires jsonlite).\n")
@@ -727,7 +741,10 @@ pdo_cache <- "02_data/Environmental Data/pdo_index.csv"
 pdo_monthly <- if (file.exists(pdo_cache)) {
   cat("  Loading from cached file:", pdo_cache, "\n")
   read.csv(pdo_cache, stringsAsFactors = FALSE) %>%
-    mutate(month = as.numeric(.data$month), year = as.numeric(.data$year))
+    # FIX (2026-10): the cache stores month names ("Jan"); as.numeric() made every
+    # month NA, so PDO silently dropped out whenever use_pdo = TRUE.
+    mutate(month = if (is.numeric(.data$month)) .data$month else match(.data$month, month.abb),
+           year = as.numeric(.data$year))
 } else {
   result <- NULL
   
@@ -821,6 +838,10 @@ if (!is.null(pdo_monthly)) {
 # Data from CMOP ERDDAP server (data.stccmop.org); CT sensor at 35 m depth.
 # Dataset: saturn02_3500_P_CT (conductivity-temperature instrument).
 
+# FIX (2026-10): only attempt the SATURN-02 download when salinity is in use.
+# NOTE: the download methods below disable TLS verification (curl -k); prefer
+# downloading manually and placing the file at saturn02_cache.
+if (use_salinity) {
 cat("\n--- Downloading SATURN-02 salinity from CMOP ERDDAP ---\n")
 
 saturn02_cache <- "02_data/Environmental Data/saturn02_salinity.csv"
@@ -946,6 +967,9 @@ if (!is.null(saturn02_sal)) {
   cat("Stations now:", paste(unique(salt_daily$station), collapse = ", "), "\n")
 } else {
   cat("SATURN-02: NOT AVAILABLE — Long Beach remains without local salinity\n")
+}
+} else {
+  cat("\n--- SATURN-02 salinity: SKIPPED (use_salinity = FALSE) ---\n")
 }
 
 # ── Ordering factors for beaches and seasons ───────────────────────────────
@@ -2130,6 +2154,27 @@ if (!is.null(wi_wk)) {
   ti_weekly <- NULL
   cat("Weekly:       SKIPPED (wi_wk not available)\n")
 }
+
+# ── FIX (2026-10): non-temperature indices from a complete monthly grid ──
+# merge_all_predictors() LEFT-joins upwelling/discharge/PDO onto the buoy
+# temperature table, so those predictors were silently dropped for every
+# beach-month without temperature data (e.g. BEUTI n = 25 instead of 28 at
+# Copalis) and seasonal means were taken over a subset of months. Rebuild
+# them from a full beach × year × month grid and keep temperature indices as is.
+env_grid <- expand_grid(beach = bc$beach,
+                        year  = sort(unique(upwell_monthly$year)),
+                        month = 1:12) %>%
+  mutate(t_min = NA_real_, t_max = NA_real_)
+env_idx <- env_grid %>%
+  merge_all_predictors(upwell_monthly, wi_sal, discharge_monthly, pdo_monthly) %>%
+  compute_seasonal_indices() %>%
+  select(-matches("^t_"))
+replace_env_indices <- function(ti) {
+  ti %>% select(beach, year, matches("^t_")) %>% full_join(env_idx, by = c("beach", "year"))
+}
+ti_monthly      <- replace_env_indices(ti_monthly)
+ti_half_monthly <- replace_env_indices(ti_half_monthly)
+if (!is.null(ti_weekly)) ti_weekly <- replace_env_indices(ti_weekly)
 
 cat("\n--- Seasonal index dimensions ---\n")
 cat("Monthly:     ", nrow(ti_monthly), "rows,", ncol(ti_monthly), "cols\n")
@@ -3779,11 +3824,17 @@ for (bch in beach_order) {
     model_fits  <- list()
     model_stats <- list()
     
+    # FIX (2026-10): AICc is only comparable across models fitted to the SAME
+    # observations. Previously each formula dropped its own NA rows, so models
+    # with lagged terms were scored on fewer years. Use the common complete cases.
+    all_needed <- unique(unlist(lapply(formulas, all.vars)))
+    md_common  <- md %>% select(sy, all_of(all_needed)) %>% na.omit()
+    
     for (mname in names(formulas)) {
       
       # Determine which columns are needed
       needed_vars <- all.vars(formulas[[mname]])
-      md_complete <- md %>% select(sy, all_of(needed_vars)) %>% na.omit()
+      md_complete <- md_common %>% select(sy, all_of(needed_vars))
       
       if (nrow(md_complete) < 8) next  # need minimum 8 observations
       
@@ -3942,7 +3993,8 @@ for (key in names(model_results)) {
   
   # Get complete data used by the model
   needed <- all.vars(res$formulas[[res$best_model]])
-  md_complete <- md %>% select(sy, all_of(needed)) %>% na.omit()
+  all_needed <- unique(unlist(lapply(res$formulas, all.vars)))
+  md_complete <- md %>% select(sy, all_of(all_needed)) %>% na.omit() %>% select(sy, all_of(needed))
   
   # In-sample predictions
   md_complete$fitted   <- fitted(bfit)
@@ -4052,7 +4104,8 @@ for (key in names(model_results)) {
   if (is.null(bfit)) next
   
   needed <- all.vars(res$formulas[[res$best_model]])
-  md_complete <- md %>% select(sy, all_of(needed)) %>% na.omit()
+  all_needed <- unique(unlist(lapply(res$formulas, all.vars)))
+  md_complete <- md %>% select(sy, all_of(all_needed)) %>% na.omit() %>% select(sy, all_of(needed))
   
   # Predictions
   md_complete$fitted <- fitted(bfit)
@@ -4217,7 +4270,8 @@ pred_obs_table <- map_dfr(model_results, function(res) {
   if (is.null(bfit)) return(NULL)
   
   needed <- all.vars(res$formulas[[res$best_model]])
-  md_complete <- res$model_data %>% select(sy, all_of(needed)) %>% na.omit()
+  all_needed <- unique(unlist(lapply(res$formulas, all.vars)))
+  md_complete <- res$model_data %>% select(sy, all_of(all_needed)) %>% na.omit() %>% select(sy, all_of(needed))
   md_complete$fitted <- fitted(bfit)
   
   cv <- tryCatch(loocv(res$formulas[[res$best_model]], md_complete),
@@ -4678,7 +4732,7 @@ p_overlay <- overlay_dat %>%
              labeller = label_wrap_gen(width = 80)) +
   labs(x     = "Survey year",
        y     = "Standardized value (Z-score)",
-       title = "Best environmental predictor tracks recruit abundance when time-shifted",
+       title = "Best-|r| predictor (selected post hoc from all windows and lags) vs recruit abundance",
        subtitle = "Red line = environmental predictor shifted forward by optimal lag | Black = actual recruit counts") +
   my_theme +
   theme(legend.position  = "bottom",
@@ -4698,8 +4752,9 @@ if (save_synthesis) {
 # ═════════════════════════════════════════════════════════════════════════
 # If BEUTI is active, produce a focused overlay of BEUTI (the dominant
 # recruit predictor at mid-coast beaches) against recruit abundance.
-# Uses a fixed biologically motivated window (larval+settlement, Jun–Aug)
-# at lags 2–5 to show the spawning-to-harvest pipeline.
+# NOTE (2026-10): despite earlier comments, this does NOT use a fixed window:
+# beuti_best below picks the window and lag (0–5) with the largest |r| per beach,
+# post hoc. Treat as illustration only (see docs/methodology-review.md).
 # ═════════════════════════════════════════════════════════════════════════
 
 if (use_beuti) {
@@ -4770,10 +4825,10 @@ if (use_beuti) {
     facet_wrap(~label, ncol = 1, scales = "free_y") +
     labs(x     = "Survey year (summer stock assessment → fall/spring fishery)",
          y     = "Standardized value (Z-score)",
-         title = "Biologically effective upwelling (BEUTI) predicts recruit abundance",
+         title = "BEUTI (best window and lag per beach, selected post hoc) vs recruit abundance",
          subtitle = paste0("Green = BEUTI shifted forward by optimal lag | ",
                           "Black = recruits counted in summer survey\n",
-                          "Strong BEUTI during larval/settlement phase → more harvestable clams years later")) +
+                          "Sign-aligned for display; selection is post hoc and not corrected for multiple testing")) +
     my_theme +
     theme(legend.position  = "bottom",
           strip.background = element_rect(fill = "#E5F5E0", color = "black"),
@@ -4988,9 +5043,9 @@ if (use_beuti) {
     facet_wrap(~label, scales = "free", ncol = 3) +
     labs(x     = "BEUTI index (biologically effective upwelling)",
          y     = "Recruit abundance (≥ 76 mm, summer survey)",
-         title = "Upwelling productivity predicts harvestable razor clam abundance",
+         title = "BEUTI (best window and lag per beach, selected post hoc) vs recruit abundance",
          subtitle = paste0("Each point = one survey year | Green line = linear fit ± 95% CI\n",
-                          "More upwelling during larval/settlement phase → more clams in the fishery years later")) +
+                          "Window and lag chosen by largest |r|; p-values are not adjusted for this selection")) +
     my_theme +
     theme(strip.background = element_rect(fill = "#E5F5E0", color = "black"),
           strip.text       = element_text(size = 9, lineheight = 1.1))
@@ -5396,7 +5451,7 @@ p_timing_rec <- critical_rec %>%
   labs(x     = "Seasonal window (chronological within the lag year)",
        y     = "Pearson r with recruit abundance",
        title = "When in the spawning-to-settlement year do ocean conditions matter for recruits?",
-       subtitle = paste0("Lags 3–5 span the critical period when harvestable-size clams were spawned, ",
+       subtitle = paste0("Lags 2–5 shown (filter below); interpretation depends on survey timing, see methodology review. ",
                          "drifted as larvae, and settled\n",
                          "x-axis = month windows within each lag year | Rows = beaches (N → S)")) +
   my_theme +
@@ -5436,7 +5491,7 @@ p_timing_pre <- critical_pre %>%
   labs(x     = "Seasonal window (chronological within the lag year)",
        y     = "Pearson r with pre-recruit abundance",
        title = "When in the larval-to-settlement year do ocean conditions matter for pre-recruits?",
-       subtitle = paste0("Lags 1–3 span when these young clams were spawned and settled\n",
+       subtitle = paste0("Lags 0–1 shown; at June surveys pre-recruits were mostly spawned in the PREVIOUS year (lag 1)\n",
                          "x-axis = month windows within each lag year | Rows = beaches (N → S)")) +
   my_theme +
   theme(legend.position  = "right",
@@ -6479,7 +6534,7 @@ p_lag_age_profile <- lag_profile_age %>%
        y     = "Mean |r| across beaches & windows",
        title = "Signal strength by lag — does each age class peak at the expected lag?",
        subtitle = paste0("YOY should peak at lag 0 | Juvenile at 0–1 | Sub-adult at 1–2 | Adult at 2–5\n",
-                         "If peaks align with biological expectations, environment→recruitment link is confirmed")) +
+                         "Peaks are post hoc maxima over windows; alignment alone does not confirm a causal link")) +
   my_theme +
   theme(legend.position  = "right",
         strip.background = element_rect(fill = "grey92", color = "black"),
@@ -7742,9 +7797,13 @@ for (ac in age_class_config$short_label) {
     model_fits  <- list()
     model_stats <- list()
     
+    # FIX (2026-10): common complete cases so AICc values are comparable
+    all_needed <- unique(unlist(lapply(formulas, all.vars)))
+    md_common  <- md %>% select(sy, all_of(all_needed)) %>% na.omit()
+    
     for (mname in names(formulas)) {
       needed_vars <- all.vars(formulas[[mname]])
-      md_complete <- md %>% select(sy, all_of(needed_vars)) %>% na.omit()
+      md_complete <- md_common %>% select(sy, all_of(needed_vars))
       if (nrow(md_complete) < 8) next
       
       fit <- tryCatch(lm(formulas[[mname]], data = md_complete), error = function(e) NULL)
@@ -7874,7 +7933,8 @@ for (key in names(age_model_results)) {
   if (is.null(bfit)) next
   
   needed <- all.vars(res$formulas[[res$best_model]])
-  md_complete <- md %>% select(sy, all_of(needed)) %>% na.omit()
+  all_needed <- unique(unlist(lapply(res$formulas, all.vars)))
+  md_complete <- md %>% select(sy, all_of(all_needed)) %>% na.omit() %>% select(sy, all_of(needed))
   if (nrow(md_complete) < 5) next
   
   md_complete$fitted   <- fitted(bfit)
@@ -8208,13 +8268,14 @@ for (ac in age_class_config$short_label) {
     mutate(beach = factor(beach, levels = beach_order, ordered = TRUE))
   
   # Get labels for each beach
-  pred_labels <- age_pred_selections %>%
+  # renamed from pred_labels (2026-10) to avoid overwriting the global label lookup
+  pred_labels_ac <- age_pred_selections %>%
     filter(age_class == ac, pred_rank == 1) %>%
     mutate(label = paste0(metric, " ", window, " L", lag, " (r=", round(r, 2), sig, ")")) %>%
     select(beach, label)
   
   overlay_dat_ac <- overlay_dat_ac %>%
-    left_join(pred_labels, by = "beach")
+    left_join(pred_labels_ac, by = "beach")
   
   p_overlay_ac <- overlay_dat_ac %>%
     select(beach, sy, z_abund, z_env, label) %>%
@@ -8234,7 +8295,7 @@ for (ac in age_class_config$short_label) {
     labs(x     = "Survey year",
          y     = "Z-score (standard deviations from mean)",
          title = paste0(ac, " — environmental predictor overlay (z-scored)"),
-         subtitle = "When lines track each other, environment drives abundance at the expected lag") +
+         subtitle = "Predictor chosen post hoc (largest |r|); visual tracking is not evidence of causation") +
     my_theme +
     theme(legend.position  = "bottom",
           strip.background = element_rect(fill = "grey92", color = "black"),
