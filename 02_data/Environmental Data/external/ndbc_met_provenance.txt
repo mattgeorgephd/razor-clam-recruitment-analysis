@@ -1,0 +1,6 @@
+NDBC standard met via https://coastwatch.pfeg.noaa.gov/erddap/ dataset cwwcNDBCMet
+stations 46029, 46041, 46211, 46099, 46100, 46248
+downloaded 2026-10-02
+coast angle deg 10
+rerddap 1.3.0
+md5 ndbc_met_monthly.csv d18e5931f80a45678f8b7f17a9335f5d

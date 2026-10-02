@@ -1,0 +1,5 @@
+MUR SST v4.1 monthly via https://coastwatch.pfeg.noaa.gov/erddap/ dataset jplMURSST41mday
+downloaded 2026-10-02
+climatology 2003 - 2020
+rerddap 1.3.0
+md5 mur_monthly.csv 6acc678d4d3009be1f3de50cf303168c

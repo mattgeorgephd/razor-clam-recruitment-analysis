@@ -1,0 +1,5 @@
+var,n_origins_selected,share,selected_on_all_years,windows_selected
+SST anomaly (buoys),6,0.46153846153846156,FALSE,Jul Y-1 - Jul Y-1
+BEUTI,3,0.23076923076923078,TRUE,Apr Y-1 - May Y-1; Apr Y-1 - Jul Y-1
+CUTI,3,0.23076923076923078,FALSE,Apr Y-1 - Jun Y-1; Apr Y-1 - Jul Y-1
+Storm hours Hs > 4 m (buoys),1,0.07692307692307693,FALSE,Jan Y-1 - Jan Y-1
