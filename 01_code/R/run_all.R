@@ -13,6 +13,11 @@
 #   Rscript 01_code/R/run_all.R --steps=04,10  only these steps, in this order
 #   Rscript 01_code/R/run_all.R --from=05      this step and every later one
 #   Rscript 01_code/R/run_all.R --out=DIR      write outputs to DIR (absolute, or relative to root)
+#   Rscript 01_code/R/run_all.R --vintage=current
+#                                              use the current BEUTI/CUTI/PDO files in
+#                                              02_data/Environmental Data/external/ instead of
+#                                              the cached snapshots (see 00_config.R); pair it
+#                                              with --out=DIR to keep the main outputs intact
 #   Rscript 01_code/R/run_all.R --no-report    skip the report step
 #   Rscript 01_code/R/run_all.R --notebook     also run the legacy notebook afterwards (~15 min,
 #                                              writes 03_analyses/<today>-recruitment-analysis/)
@@ -55,12 +60,12 @@ value <- function(name, default = NULL) {
   hit <- grep(paste0("^--", name, "="), args, value = TRUE)
   if (length(hit) == 0) default else sub(paste0("^--", name, "="), "", hit[1])
 }
-known <- c("fast", "no-report", "notebook", "install", "list", "help", "steps", "from", "out")
+known <- c("fast", "no-report", "notebook", "install", "list", "help", "steps", "from", "out", "vintage")
 unknown <- args[!sub("=.*$", "", sub("^--", "", args)) %in% known]
 if (length(unknown) > 0) stop("Unknown argument(s): ", paste(unknown, collapse = " "), "\nRun with --help.")
 
 if (flag("help")) {
-  cat(paste(readLines(sub("--file=", "", grep("^--file=", commandArgs(), value = TRUE)[1]))[2:26], collapse = "\n"), "\n")
+  cat(paste(readLines(sub("--file=", "", grep("^--file=", commandArgs(), value = TRUE)[1]))[2:30], collapse = "\n"), "\n")
   quit(status = 0)
 }
 if (flag("list")) {
@@ -102,6 +107,9 @@ dir.create(out, recursive = TRUE, showWarnings = FALSE)
 Sys.setenv(RC_OUT_DIR = out)
 if (flag("fast")) Sys.setenv(RC_N_SURROGATES = "200")
 n_surr <- Sys.getenv("RC_N_SURROGATES", unset = "2000")
+vintage <- value("vintage", Sys.getenv("RC_INDEX_VINTAGE", unset = "cached"))
+if (!vintage %in% c("cached", "current")) stop("--vintage must be 'cached' or 'current'")
+Sys.setenv(RC_INDEX_VINTAGE = vintage)
 
 # ── Which steps ─────────────────────────────────────────────────────────────
 ids <- STEPS$id
@@ -137,9 +145,27 @@ log_line("root ", ROOT, " | out ", out, " | commit ", commit, if (dirty) " (unco
 t_all <- Sys.time()
 timings <- data.frame(id = character(), file = character(), seconds = numeric(), status = character(),
                       stringsAsFactors = FALSE)
+# run_info.txt is written before the report step (so the report embeds this
+# run, not the previous one) and again, complete, at the end.
+write_run_info <- function(note = NULL) {
+  total <- as.numeric(difftime(Sys.time(), t_all, units = "secs"))
+  writeLines(c(
+    paste0("run_all.R  ", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
+    paste0("commit     ", commit, if (dirty) " (uncommitted changes present)" else ""),
+    paste0("args       ", if (length(args)) paste(args, collapse = " ") else "(none)"),
+    paste0("out        ", out),
+    paste0("surrogates ", n_surr),
+    paste0("vintage    ", vintage),
+    paste0("R          ", getRversion()),
+    paste0("total      ", round(total), " s", if (!is.null(note)) note else ""),
+    "",
+    sprintf("%s  %-30s %6.0f s  %s", timings$id, timings$file, timings$seconds, timings$status)
+  ), file.path(out, "run_info.txt"))
+}
 for (i in seq_len(nrow(steps))) {
   s <- steps[i, ]
   path <- file.path(ROOT, "01_code", "R", s$file)
+  if (s$id == "10") write_run_info(" (before the report step)")
   log_line("▶ step ", s$id, "  ", s$file, "  (", s$what, ")")
   t0 <- Sys.time()
   status <- "ok"
@@ -180,16 +206,6 @@ if (flag("notebook")) {
 # ── Wrap up ─────────────────────────────────────────────────────────────────
 total <- as.numeric(difftime(Sys.time(), t_all, units = "secs"))
 writeLines(capture.output(sessionInfo()), file.path(out, "sessionInfo.txt"))
-writeLines(c(
-  paste0("run_all.R  ", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
-  paste0("commit     ", commit, if (dirty) " (uncommitted changes present)" else ""),
-  paste0("args       ", if (length(args)) paste(args, collapse = " ") else "(none)"),
-  paste0("out        ", out),
-  paste0("surrogates ", n_surr),
-  paste0("R          ", getRversion()),
-  paste0("total      ", round(total), " s"),
-  "",
-  sprintf("%s  %-30s %6.0f s  %s", timings$id, timings$file, timings$seconds, timings$status)
-), file.path(out, "run_info.txt"))
+write_run_info()
 log_line("═══ run_all.R finished in ", round(total), " s ═══  report: ",
          if ("10" %in% ids) file.path(out, "report.md") else "(skipped)")

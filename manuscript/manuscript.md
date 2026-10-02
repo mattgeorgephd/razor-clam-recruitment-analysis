@@ -22,7 +22,7 @@ Environmental indices are routinely screened for associations with recruitment, 
 - **Survey timing.** Survey dates differed by about two months among beaches (median 6 June to 9 August) and drifted by up to 1.4 days per year. At June surveys, pre-recruits (<76 mm) were survivors of the previous summer's settlement, so environmental windows must be aligned to year classes rather than to survey years.
 - **Exhaustive screening.** An exhaustive screen of 900 correlations (3 predictors × 5 seasonal windows × 6 lags × 5 beaches × 2 size classes) produced 83 nominally significant results. That count was not distinguishable from autocorrelation-preserving surrogates (null median 60, 95th percentile 85; p = 0.07), and only 4 survived false-discovery-rate control, all consistent with a shared upward trend rather than a cohort effect.
 - **Selection leakage.** Choosing predictors on the full record and then cross-validating gave apparent out-of-sample skill of +0.31 relative to climatology. Repeating the selection inside each training window gave −0.20.
-- **Pre-specified tests.** Of five cohort-aligned predictors, only larval-season upwelling (BEUTI, May–Aug) was associated with year-class strength after multiplicity correction. The association was negative: −0.58 SD per SD in a coastwide index (Holm-adjusted p = 0.013). It was concentrated at interannual frequencies and sensitive to one year (2008), and it had negligible forecast skill.
+- **Pre-specified tests.** Of five cohort-aligned predictors, only larval-season upwelling (BEUTI, May–Aug) was associated with year-class strength after multiplicity correction. The association was negative: −0.58 SD per SD in a coastwide index (Holm-adjusted p = 0.013). It was concentrated at interannual frequencies, sensitive to one year (2008) and to the vintage of the index (Holm p = 0.052 on the re-issued 2026 record), and it had negligible forecast skill.
 - **Forecasting.** Last year's pre-recruit and recruit abundance forecast recruits better than any environmental model (skill +0.24 overall, up to +0.52 by beach).
 
 We recommend cohort-aligned, pre-specified hypotheses, explicit trend and autocorrelation models, family-wise calibration of any window search, and nested validation for environment–recruitment studies of nearshore invertebrates.
@@ -75,13 +75,14 @@ An initial exploratory analysis of these data suggested that upwelling during th
 
 | Variable | Source and processing |
 |---|---|
-| Upwelling (BEUTI, CUTI) | Daily indices at 46°N (Long Beach) and 47°N (other beaches); monthly means of daily values, ≥20 days required (Jacox et al. 2018 **[A]**) |
-| Columbia River discharge | Daily mean discharge at The Dalles, USGS 14105700 |
-| PDO | Monthly index, NCEI ERSST v5 |
+| Upwelling (BEUTI, CUTI) | Daily indices at 46°N (Long Beach) and 47°N (other beaches); monthly means of daily values, ≥20 days required (Jacox et al. 2018 **[A]**). Vintage: files downloaded before April 2025 (record to 2025-04). The index authors re-issue the whole record when the underlying reanalysis is updated; the vintage served in September 2026 differs throughout (daily r = 0.94), and its effect on our results is reported in Section 3.4 |
+| Columbia River discharge | Daily mean discharge at The Dalles, USGS 14105700; lower-river gauges (Port Westward 14246900, Willamette 14211720) were used only to check it (Supplement S6) |
+| PDO | Monthly index, NCEI ERSST v5 (cached copy; the current NCEI and NOAA PSL versions differ from it by up to 1 unit in single months, r = 0.98, with no effect on the results, Section 3.4) |
 | Sea-surface temperature | Hourly NDBC data from six open-coast stations: 46029 Columbia River Bar, 46041 Cape Elizabeth, 46211 Grays Harbor, 46248 Astoria Canyon, and the OOI Westport shelf and offshore moorings 46099 and 46100 |
 
 - **Why a new SST series.** The original exploratory analysis blended raw temperatures from all stations within 50 km of each beach. Station availability changed over time, and several stations were inside estuaries or harbors (e.g. Toke Point in Willapa Bay, Westport Marina in Grays Harbor), so that series contained artificial steps.
-- **How it was built.** Monthly means (months with ≥240 hourly observations) were modelled as a station-specific monthly climatology plus a common regional anomaly, with station error variances as precision weights, estimated jointly by alternating least squares (a two-way additive model of the kind used for climate-station homogenisation). Joint estimation avoids the bias that arises when a station with a short record is referenced to its own climatology. The regional anomaly carries a standard error (0.15–0.40 °C depending on the number of reporting stations). Four alternative constructions, including naive buoy anomalies and a beach-local version that admits estuary gauges, agree with it at r ≥ 0.98 and give the same inference (Supplement S6).
+- **How it was built.** Monthly means (months with ≥240 hourly observations) were modelled as a station-specific monthly climatology plus a common regional anomaly, with station error variances as precision weights, estimated jointly by alternating least squares (a two-way additive model of the kind used for climate-station homogenisation). Joint estimation avoids the bias that arises when a station with a short record is referenced to its own climatology. The regional anomaly carries a standard error (0.15–0.40 °C depending on the number of reporting stations). Four alternative buoy constructions, including naive buoy anomalies and a beach-local version that admits estuary gauges, agree with it at r ≥ 0.98; two satellite products, NOAA OISST v2.1 (0.25°, 1981–) and JPL MUR (1 km, 2002–), extracted at pixels off each beach, agree with it at monthly r = 0.88 and 0.94; all give the same inference (Supplement S6).
+- **Independent checks of the upwelling indices.** From the hourly winds of the same six buoys we computed alongshore wind stress (Large and Pond drag; coastline 10° east of north) and offshore Ekman transport, homogenised across stations in the same way, and from their wave records the mean of Hs² and the share of hours with Hs > 4 m. These were used only to check BEUTI and CUTI and the first-winter hypothesis, not as predictors (Supplement S6).
 
 ### 2.4 Pre-specified predictors
 
@@ -202,6 +203,7 @@ All analyses used log abundance. Pre-recruit and recruit abundance were never ze
 - *Influential year.* All leave-one-year-out estimates were negative (−0.26 to −0.43). However, removing 2008, the year with the highest BEUTI and a weak year class at several beaches, reduced the estimate to −0.25 (p = 0.20).
 - *Without the trend term.* The pooled estimate was −0.17 (p = 0.21), because BEUTI and year are strongly correlated.
 - *CUTI analogue.* CUTI over the same window showed the same sign but a weaker association (linear −0.14, p = 0.32; first differences −0.33, p = 0.029).
+- *Index vintage.* The BEUTI/CUTI record served by the index authors in September 2026 differs from the vintage used here throughout the record (daily r = 0.94; May–Aug 47°N annual means r = 0.94). Refitting every pre-specified test on that vintage with the same year classes left the BEUTI association's sign and size unchanged but reduced its precision: coastwide index −0.62 ± 0.20 (p = 0.005, Holm 0.052); pooled LMM −0.31 (p = 0.11); without Kalaloch −0.45 (Holm 0.14); first differences −0.70 (p < 0.001); 2003 onward −0.50 (p = 0.025) [`env_index_vintage_effects.csv`; full rerun summarised in `docs/environmental-record-options.md` §6.1]. The null results for CUTI (winter) and the PDO held under both vintages and under both current PDO sources.
 
 **Recruits (year class Y at survey Y+2):**
 
@@ -273,9 +275,9 @@ Several mechanisms could produce a negative association:
 
 The data cannot distinguish these mechanisms. The association is concentrated at interannual frequencies, depends substantially on one year (2008), and adds little forecast skill. We therefore regard it as a hypothesis to be tested with independent data, not as an established driver. Survey years 2025–2027 provide the first such test; forecasts for 2025 are archived (Section 4.5).
 
-### 4.3 The BEUTI trend
+### 4.3 The BEUTI trend and the index vintage
 
-May–Aug BEUTI at 47°N increased about tenfold over the record, far more than CUTI relative to its variability, implying a large increase in the nitrate concentration of upwelled water. Before this trend is interpreted ecologically, the homogeneity of the index should be confirmed with its developers, for example whether different segments of the underlying ocean reanalysis or changes in assimilated data contribute to it. **TODO:** check BEUTI documentation. Our main inferences rely on detrended or differenced BEUTI and are not affected by a smooth trend artefact, but a step change would affect the interpretation of decadal patterns.
+May–Aug BEUTI at 47°N increased about tenfold over the record, far more than CUTI relative to its variability, implying a large increase in the nitrate concentration of upwelled water. Measured buoy winds reproduce CUTI's interannual variation (r = 0.72) and its upward trend (about a fifth to a quarter of the mean per decade in both), so the transport component of the increase is real; they explain only a tenth of BEUTI's detrended variance, and BEUTI's trend is three times larger relative to its mean, so the nitrate component is not independently corroborated [`env_wind_vs_upwelling.csv`]. In the vintage we used there is no level shift at the 2010/2011 boundary of the underlying reanalysis; in the vintage served in September 2026 there is one at 47°N (+1.1 units after trend, p = 0.02) [`env_index_vintages.csv`]. Before the trend is interpreted ecologically, the homogeneity of the index and the reason for the revision should be confirmed with its developers. **TODO:** contact the index authors. Our main inferences rely on detrended or differenced BEUTI and are not affected by a smooth trend artefact; the vintage sensitivity (Section 3.4) shows that the association survives the revision with the same sign and size but reduced precision.
 
 ### 4.4 Implications for forecasting and management
 
@@ -307,7 +309,7 @@ For Washington razor clams, broad environmental screening of survey data produce
 
 - **Code:** all code, derived data and outputs are in the project repository (`01_code/R/`, `02_data/derived/`, `03_analyses/robust-reanalysis/`).
 - **Raw survey data:** provided by WDFW (**TODO:** data-sharing statement and permissions, including tribal and NPS data for Kalaloch).
-- **Public environmental data:** BEUTI/CUTI (Jacox et al. 2018), NDBC buoys, USGS 14105700, NCEI PDO.
+- **Public environmental data:** BEUTI/CUTI (Jacox et al. 2018; vintage to 2025-04, and the 2026-09-28 vintage used for the sensitivity analysis), NDBC buoys (temperature, winds, waves), USGS 14105700, 14246900 and 14211720, NCEI and PSL PDO, NOAA OISST v2.1 and JPL MUR via the CoastWatch ERDDAP. The fetch scripts and provenance files are in the repository (`01_code/R/acquire/`, `02_data/Environmental Data/external/`).
 
 ## Acknowledgements
 
@@ -346,7 +348,7 @@ Figures are generated by `01_code/R/run_all.R` into `03_analyses/robust-reanalys
 - **S3.** Full model and beach-specific results (`confirmatory_full_model.csv`, `confirmatory_by_beach.csv`).
 - **S4.** Window-scan results for recruits (`fig_window_scan_rec.png`, `window_scan_all.csv`).
 - **S5.** Data-quality notes (`task.md` T20–T24).
-- **S6.** Environmental-record diagnostics: coverage, legacy station-blend offsets, alternative SST constructions, BEUTI/CUTI homogeneity (`docs/environmental-record-options.md`; `fig_env_coverage.png`, `fig_legacy_idw_vs_homogenized.png`, `fig_sst_homogenization.png`, `fig_beuti_homogeneity.png`; `env_*.csv`).
+- **S6.** Environmental-record diagnostics: coverage, legacy station-blend offsets, alternative SST constructions including satellite products, BEUTI/CUTI homogeneity, index vintages, buoy winds and waves against the indices, lower-river gauges (`docs/environmental-record-options.md`; `fig_env_coverage.png`, `fig_legacy_idw_vs_homogenized.png`, `fig_sst_homogenization.png`, `fig_beuti_homogeneity.png`, `fig_index_vintages.png`, `fig_wind_vs_upwelling.png`; `env_*.csv`).
 
 ---
 

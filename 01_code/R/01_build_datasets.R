@@ -85,8 +85,18 @@ survey <- season %>%
 write_csv(survey, file.path(DERIVED, "survey_beach_year.csv"))
 
 # ── 3. Environmental monthly table ──────────────────────────────────────────
+# INDEX_VINTAGE (00_config.R) selects the cached snapshots or the current files
+# in external/ (acquire/fetch_climate_indices.R); the vintages differ through
+# the whole record, so this is recorded in env_monthly.csv as `index_vintage`.
+index_file <- function(idx) {
+  if (INDEX_VINTAGE == "cached") return(file.path(ENV_DIR, paste0(idx, "_daily.csv")))
+  f <- sort(list.files(file.path(ENV_DIR, "external"),
+                       pattern = sprintf("^%s_daily_\\d{4}-\\d{2}-\\d{2}\\.csv$", idx), full.names = TRUE))
+  if (length(f) == 0) stop("INDEX_VINTAGE = current but no external/", idx, "_daily_<date>.csv; run acquire/fetch_climate_indices.R")
+  tail(f, 1)
+}
 upw <- function(file, name) {
-  read_csv(file.path(ENV_DIR, file), show_col_types = FALSE) %>%
+  read_csv(file, show_col_types = FALSE) %>%
     select(year, month, `46N`, `47N`) %>%
     group_by(year, month) %>%
     summarise(across(c(`46N`, `47N`), ~ mean(.x, na.rm = TRUE)), n_days = n(), .groups = "drop") %>%
@@ -94,8 +104,9 @@ upw <- function(file, name) {
     rename_with(~ paste0(name, "_", .x), c(`46N`, `47N`)) %>%
     select(-n_days)
 }
-beuti <- upw("BEUTI_daily.csv", "beuti")
-cuti  <- upw("CUTI_daily.csv",  "cuti")
+beuti <- upw(index_file("BEUTI"), "beuti")
+cuti  <- upw(index_file("CUTI"),  "cuti")
+message("01: upwelling indices from ", basename(index_file("BEUTI")), " (vintage: ", INDEX_VINTAGE, ")")
 
 discharge <- read_csv(file.path(ENV_DIR, "columbia_discharge.csv"), show_col_types = FALSE) %>%
   group_by(year, month) %>%
@@ -109,6 +120,10 @@ pdo <- read_csv(file.path(ENV_DIR, "pdo_index.csv"), show_col_types = FALSE) %>%
          pdo = if_else(abs(pdo) > 90, NA_real_, pdo)) %>%
   filter(!is.na(month)) %>%
   select(year, month, pdo)
+if (INDEX_VINTAGE == "current") {   # NCEI ERSST v5 PDO as fetched by acquire/fetch_climate_indices.R
+  pdo <- read_csv(file.path(ENV_DIR, "external", "pdo_monthly.csv"), show_col_types = FALSE) %>%
+    transmute(year = as.integer(year), month = as.integer(month), pdo = ncei)
+}
 
 # Regional SST anomaly from open-coast buoys and moorings, homogenised with the
 # two-way station model in lib_env_homogenize.R (station climatology + common
@@ -160,6 +175,7 @@ env_monthly <- expand_grid(year = 1988:2026, month = 1:12) %>%
   left_join(sst_naive, by = c("year", "month")) %>%
   mutate(n_sst_stations = replace_na(n_sst_stations, 0L))
 for (e in ext) env_monthly <- env_monthly %>% left_join(e, by = c("year", "month"))
+env_monthly <- env_monthly %>% mutate(index_vintage = INDEX_VINTAGE)
 
 write_csv(env_monthly, file.path(DERIVED, "env_monthly.csv"))
 

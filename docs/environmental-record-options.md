@@ -1,6 +1,6 @@
 # Building a homogeneous environmental record: diagnosis and options
 
-*2 October 2026. Companion to `01_code/R/09_env_record_diagnostics.R`, whose outputs (`03_analyses/robust-reanalysis/figures/fig_env_*.png`, `fig_legacy_idw_vs_homogenized.png`, `fig_sst_homogenization.png`, `fig_beuti_homogeneity.png`, and `tables/env_*.csv`) are cited throughout. Numbers are from the 2026-10-02 run.*
+*2 October 2026. Companion to `01_code/R/09_env_record_diagnostics.R`, whose outputs (`03_analyses/robust-reanalysis/figures/fig_env_*.png`, `fig_legacy_idw_vs_homogenized.png`, `fig_sst_homogenization.png`, `fig_beuti_homogeneity.png`, `fig_index_vintages.png`, `fig_wind_vs_upwelling.png`, and `tables/env_*.csv`) are cited throughout. Numbers are from the 2026-10-02 run. Sections 1–5 were written before network access was available; §6 reports what the external products showed once they had been fetched.*
 
 The environmental side of this analysis was assembled from whatever was available near each beach: a dozen buoys and shore gauges with different start dates, three OOI moorings for salinity from 2014, two upwelling indices derived from an ocean model, a river gauge 300 km upstream, and a basin-scale climate index. This document (1) quantifies how much that patchwork matters, (2) describes the fix already implemented for temperature, and (3) evaluates the options for a more homogeneous and more mechanistic record, with a recommended sequence.
 
@@ -14,7 +14,7 @@ The environmental side of this analysis was assembled from whatever was availabl
 
 | Source | Record | Coverage of the 336 survey-period months (1997–2024) | Comment |
 |---|---|---|---|
-| BEUTI / CUTI, 46N and 47N | 1988-01 to 2025-04 | 100% | Model-derived; see §1.3 |
+| BEUTI / CUTI, 46N and 47N | 1988-01 to 2025-04 (cached); current vintage to 2026-09 | 100% | Model-derived; see §1.3 and §6.1 |
 | PDO | 1950 to 2026 | 100% | Basin scale |
 | Columbia discharge, The Dalles | 1990 to 2026 | 100% | 300 km upstream of the mouth |
 | 46041 Cape Elizabeth (open coast) | 1990–2024 | 79% full months | The only long northern buoy; gaps in 1997–99, 2006–07, 2022, 2024 |
@@ -59,7 +59,7 @@ BEUTI and CUTI (Jacox et al. 2018) are computed from an ocean model that assimil
 - The "tenfold" increase at 47N (0.18 in 1988–98 to 2.14 in 2011–24) is inflated by a near-zero baseline. In absolute terms BEUTI at 47N rose by about 2 mmol m⁻¹ s⁻¹, comparable to 44–45N and much less than 39–42N (+8 to +9); the ratio of last to first period is 12 at 47N, 7 at 46N, 3.5 at 45N, 1.5–2.2 from 36N to 43N, and 3–7.5 again at 31–33N (`env_beuti_latitude_periods.csv`). CUTI rose by a factor of 1.9 at 47N and 1.0–1.5 elsewhere.
 - **Cross-check with an independent record.** After detrending, May–Aug BEUTI correlates at r = −0.48 with the May–Sep buoy SST anomaly and CUTI at −0.30 (`env_index_annual_correlations.csv`): stronger upwelling, cooler summers, as physics requires. The interannual signal in BEUTI is therefore real. The *trends* oppose each other (BEUTI up, buoy SST up by about 0.3 deg C per decade), which is not what a doubling of physical upwelling would produce on its own; it is consistent either with warming of the upwelled source water and higher nitrate per unit transport, or with partly artificial trend in the modelled nitrate field. This is the specific question to put to the authors.
 
-For inference, the pipeline already uses BEUTI only after removing a trend (trend term, loess, or first differences), so a smooth artefact would not change the main result; a step would, and none is detectable.
+For inference, the pipeline already uses BEUTI only after removing a trend (trend term, loess, or first differences), so a smooth artefact would not change the main result; a step would, and none is detectable in the cached vintage. (§6.1: the current vintage of the index does show one at 47N.)
 
 ### 1.4 Other sources
 
@@ -116,7 +116,7 @@ Adequate for the regional SST predictor as used. No further effort. Does not add
 - **Products.** NOAA OISST v2.1 (daily, 0.25 deg, 1981-09 to present; blended AVHRR plus in situ, gap-free), NOAA CoralTemp (daily, 5 km, 1985 to present), JPL MUR (daily and monthly, 1 km, 2002-06 to present). All on the CoastWatch ERDDAP (`coastwatch.pfeg.noaa.gov/erddap`), readable with `rerddap`/`rerddapXtracto`, which the repository already uses.
 - **Pros.** One homogeneous product for the whole record; per-pixel anomalies at each beach; no station switches; daily resolution allows event-based predictors (days above a threshold, timing of the spring transition). MUR resolves the nearshore band.
 - **Cons.** OISST pixels are about 20 km and the nearest ocean pixel may sit 10–30 km offshore; coastal pixels can be land-contaminated; infrared products are cloud-limited (OISST interpolates). MUR starts in 2002, so it validates rather than replaces for the 1990s. Satellite "skin" temperature differs from the 1–2 m buoy measurement by a few tenths of a degree, which matters only for absolute values, not anomalies.
-- **Effort.** Low: `fetch_oisst.R` and `fetch_mur.R` are written (untested here); a few hours on a networked machine including validation.
+- **Effort.** Low: `fetch_oisst.R` and `fetch_mur.R` are written (untested here); a few hours on a networked machine including validation. **Done 2026-10-02 (§6.2).**
 - **Unlocks.** Beach-specific SST predictors with uniform quality; validation of the buoy series; daily thermal-event metrics.
 
 ### C. Buoy winds and waves from the same NDBC stations (recommended second step)
@@ -125,13 +125,13 @@ Adequate for the regional SST predictor as used. No further effort. Does not add
 - **Derived predictors.** (i) Alongshore wind stress and offshore Ekman transport, i.e. a Bakun-type upwelling index at 46–47N computed from *measured* winds, independent of the ROMS product; (ii) winter wave energy (mean Hs², storm hours with Hs > 4 m) for the first-winter washout hypothesis, which the 1988 WDF report describes qualitatively (small clams "washed out by the surf"). Both homogenised across stations with `lib_env_homogenize.R`.
 - **Pros.** Directly mechanistic; same homogenisation framework; tests whether the BEUTI trend is matched by measured winds.
 - **Cons.** Same coverage gaps as the temperature record (1997–2003 relies on two buoys); wave records are shorter (46211 waverider from 2004).
-- **Effort.** Low to moderate: `fetch_ndbc_met.R` is written (untested here). The coastline angle used for the alongshore rotation should be checked.
+- **Effort.** Low to moderate: `fetch_ndbc_met.R` is written (untested here). The coastline angle used for the alongshore rotation should be checked. **Done 2026-10-02 (§6.3).**
 - **Unlocks.** Two new pre-specified hypotheses (local upwelling during the larval season; storminess in the first winter). They form a *new* family and must be declared as such; the pipeline's Holm correction applies within the family.
 
 ### D. Lower-river discharge (recommended, trivial)
 
 - **Product.** USGS 14246900, Columbia River at Beaver Army Terminal near Quincy, OR (lowest long-term main-stem gauge), and 14211720, Willamette at Portland; via `dataRetrieval`.
-- **Effort.** Minutes: `fetch_usgs_lower_columbia.R` is written (site numbers to confirm).
+- **Effort.** Minutes: `fetch_usgs_lower_columbia.R` is written (site numbers to confirm). **Done 2026-10-02 (§6.4).**
 - **Unlocks.** A freshet predictor that includes the Willamette; a winter-flow predictor for plume extent at Long Beach.
 
 ### E. Ocean reanalysis or regional model output
@@ -145,7 +145,7 @@ Adequate for the regional SST predictor as used. No further effort. Does not add
 ### F. Verification of BEUTI/CUTI with the index authors
 
 - **Action.** Ask whether the 2010/2011 transition, assimilated-data changes, or model-version changes could impart trends to the nitrate field at 46–47N; request the model's nitrate time series at the base of the mixed layer; compare the BEUTI trend with the buoy-wind Bakun index from option C.
-- **Effort.** An email; a day of comparison once option C exists.
+- **Effort.** An email; a day of comparison once option C exists. **Comparison done 2026-10-02 (§6.1, §6.3); the email is still to send.**
 - **Unlocks.** Confidence in the sign and size of the one surviving association.
 
 ### G. Formal data fusion (state-space model)
@@ -178,9 +178,9 @@ Adequate for the regional SST predictor as used. No further effort. Does not add
 ## 4. Recommended sequence
 
 1. **Now, no network needed (done).** Homogenised buoy anomaly as the pipeline series; diagnostics in step 09; this document.
-2. **Next session with network access (half a day).** Run `01_code/R/acquire/fetch_oisst.R`, `fetch_mur.R`, `fetch_ndbc_met.R`, `fetch_usgs_lower_columbia.R`; confirm dataset ids; rerun `./run_pipeline.sh`. The pipeline joins any `external/*_monthly.csv` automatically, and step 09 can be extended by one line per product to include it in `env_sst_variants.csv`. Validate OISST and MUR against the buoy anomaly (expect r > 0.9 monthly; inspect the 1997–98 El Niño and the 2014–16 heatwave).
+2. **With network access (done 2026-10-02).** The four fetch scripts plus `fetch_climate_indices.R` were run; their products are committed with provenance and joined into `env_monthly.csv`; step 09 compares them with the cached record (§6).
 3. **Pre-register the new predictor family before computing any clam correlation:** local upwelling index (alongshore stress, May–Aug Y), winter wave energy (Nov Y–Feb Y+1), lower-river freshet (Apr–Jun Y), beach-specific OISST anomaly (May–Sep Y). Add them to `predictor_specs` in `01_build_datasets.R` and to `PREDICTORS` in `04_confirmatory_models.R`; Holm within the family; report alongside, not instead of, the original family.
-4. **Write to the BEUTI/CUTI authors** (option F) with `fig_beuti_homogeneity.png` and the cross-check numbers in §1.3.
+4. **Write to the BEUTI/CUTI authors** (option F) with `fig_beuti_homogeneity.png`, `fig_index_vintages.png`, `fig_wind_vs_upwelling.png` and the numbers in §1.3 and §6.1–6.3; and decide which vintage the manuscript uses (task T35).
 5. **Only if transport becomes the working hypothesis:** GLORYS or LiveOcean cross-shelf transport and plume salinity (option E), and the fusion model (option G).
 
 ## 5. Implications for the manuscript
@@ -189,3 +189,73 @@ Adequate for the regional SST predictor as used. No further effort. Does not add
 - The legacy notebook's temperature-based results (max temperature "predictors") rest on series with 0.3–0.9 deg C station-era offsets and should not be cited.
 - The BEUTI discussion can state that the index shows no step at the product boundary and that its detrended interannual signal is corroborated by independent buoy SST, while noting that its trend is not corroborated by the SST trend and remains to be verified with the authors.
 - Once options B–D are in, the manuscript gains a second, declared predictor family; the first family's results stand as reported.
+- The methods must state the vintage (file creation date) of BEUTI/CUTI and the source and download date of the PDO, and the results should carry the vintage sensitivity (§6.1) as a robustness item: the BEUTI association keeps its sign and size under the current vintage, but its Holm-corrected p moves from 0.013 to 0.052.
+
+---
+
+## 6. What the external products showed (2026-10-02)
+
+All five `acquire/` scripts were run against the live servers; the products are in `02_data/Environmental Data/external/` with provenance files, and step 09 sections F–H compare them with the cached record. The fixes needed to make the scripts run (ERDDAP time bounds, OISST's depth axis, upper-case NDBC field names, the USGS Water Data API) are recorded in `01_code/R/acquire/README.md`.
+
+### 6.1 The upwelling indices and the PDO have been re-issued
+
+The cached `BEUTI_daily.csv` and `CUTI_daily.csv` end in April 2025. The files on the authors' site (NetCDF creation date 28 September 2026) extend to September 2026 and **differ throughout the record**: 91–93% of the daily BEUTI values at 46–47N changed, the daily correlation between vintages is 0.94, and for the May–Aug window at 47N the annual means correlate at 0.94 (0.84 after detrending) with a largest single-year difference of 1.4 units (2020) (`env_index_vintages.csv`, `fig_index_vintages.png`). The whole series was evidently regenerated from an updated reanalysis rather than extended.
+
+| 47N, May–Aug mean | Cached vintage (to 2025-04) | Current vintage (2026-09-28) |
+|---|---|---|
+| Mean 1988–2024 | 1.25 | 1.55 |
+| Trend per decade | +0.76 | +1.07 |
+| Level shift at 2010/2011 after trend (p) | +0.18 (0.65) | **+1.07 (0.022)** |
+| Best single break year | 2010 | 2010 |
+| Winter CUTI (Nov–Feb) mean | −0.34 | about 0.1 higher throughout, same shape |
+
+The level shift at the reanalysis boundary that was absent in the cached vintage is present in the current one at 47N (not at 46N: +0.06, p = 0.86). This strengthens the case for asking the authors directly (option F) and is the main open question about the index.
+
+The PDO cache matches neither NCEI's current ERSST v5 file nor NOAA PSL's: monthly r = 0.98 with both, with a systematic offset of about −0.3 (NCEI is lower) and single-month differences up to 1 unit; the May–Sep window correlates at 0.99 between versions. The cache was probably downloaded from NCEI before a revision of ERSST; the PSL version uses a different EOF base period.
+
+**Effect on the pre-specified tests** (`env_index_vintage_effects.csv`, same 27 year classes, estimators identical to `04_confirmatory_models.R`; and a full pipeline run with `./run_pipeline.sh --vintage=current --out=03_analyses/robust-reanalysis-vintage-current`, git-ignored):
+
+| Test (pre-recruits of year class Y) | Cached vintage | Current vintage |
+|---|---|---|
+| BEUTI, pooled LMM, SD per SD (LRT p; Holm) | −0.34 (0.052; 0.47) | −0.31 (0.11; 1.0) |
+| BEUTI, pooled LMM without Kalaloch (p; Holm) | −0.49 (0.003; 0.031) | −0.45 (0.014; 0.14) |
+| BEUTI, coastwide GLS-AR(1) (p; Holm) | −0.58 (0.0013; 0.013) | −0.62 (0.005; 0.052) |
+| BEUTI, linear detrending / loess / first differences (p) | −0.37 (0.03) / r −0.44 (0.02) / −0.57 (0.0002) | −0.36 (0.10) / r −0.43 (0.03) / −0.70 (0.0007) |
+| BEUTI, without most influential year (year; p) | −0.25 (2008; 0.20) | −0.26 (2020; 0.24) |
+| BEUTI, 2003 onward (p) | −0.44 (0.011) | −0.50 (0.025) |
+| Trend + BEUTI forecast skill vs climatology | −0.03 | −0.12 |
+| CUTI Nov–Feb, PDO May–Sep (NCEI or PSL) | all p ≥ 0.35 | all p ≥ 0.34 |
+| Window scan: windows passing family-wise control | 0 of 1,380 | 0 of 1,380 |
+
+The association keeps its sign and size under the current vintage; its precision falls (the current series is more variable in 2014–2024), so the Holm-corrected coastwide p moves from 0.013 to 0.052 and the primary pooled test from 0.052 to 0.11. Honest reporting therefore has to carry both: "modest, negative, borderline after multiplicity correction, and dependent on which vintage of the index is used". The null results for CUTI-winter and PDO do not depend on the vintage or the PDO source.
+
+### 6.2 Satellite SST agrees with the buoys, least in summer
+
+| Construction | Months 1990–2025 | Monthly r with pipeline series V1 | May–Sep annual r | SST effect on the pre-recruit index (SD per SD, p) |
+|---|---|---|---|---|
+| V4 OISST regional (0.25 deg, 45.9–48.1N) | 424 | 0.88 | 0.79 | +0.08 (0.57) |
+| V5 MUR 1 km, mean of five beach boxes (2002–) | 281 | 0.94 | 0.87 | +0.30 (0.09; 22 year classes) |
+| OISST beach pixels, beach-specific in the pooled LMM | | | | +0.04 (0.70) |
+| MUR beach boxes, beach-specific in the pooled LMM | | | | +0.10 (0.52) |
+
+(`env_sst_variants.csv`, `env_sst_variant_effects.csv`, `env_satellite_vs_buoy.csv`.) Agreement is 0.95–0.97 in winter and 0.78–0.81 in July–September, when upwelling sets up cross-shore gradients that a buoy 10–50 km offshore and a 20 km pixel sample differently; and it rises from 0.83 in 1990–2003 (one or two buoys) to 0.94 in 2014–2025 (five). MUR's five beach boxes correlate 0.92–0.93 with V1 except Long Beach (0.83), where the plume dominates. North–south coherence (Long Beach vs Kalaloch, monthly) is 0.73 in OISST and 0.81 in MUR against 0.88 in the beach-local buoy construction, so the buoy-based beach series overstate alongshore coherence. None of this changes the SST inference, which is null under every construction; it does mean that a beach-level SST predictor should come from MUR or OISST, not from interpolated stations. Caveat: the CoastWatch OISST aggregation holds only 139–239 days per year for 1992–1998, so those monthly means rest on 10–15 days.
+
+### 6.3 Measured winds corroborate CUTI, including its trend, but not the size of BEUTI's
+
+From the hourly winds of the six open-coast buoys, homogenised across stations as for temperature (`external/ndbc_met_monthly.csv`; alongshore stress positive equatorward, Large and Pond drag, coastline angle 10 deg):
+
+| May–Aug, 1991–2024 | r with buoy wind stress | detrended r | trend, share of mean per decade (p) |
+|---|---|---|---|
+| Buoy alongshore wind stress | 1 | 1 | +24% (0.006) |
+| CUTI 47N, cached / current | 0.72 / 0.66 | 0.63 / 0.53 | +18% (0.002) / +26% (<0.001) |
+| BEUTI 47N, cached / current | 0.53 / 0.53 | 0.31 / 0.30 | +58% (<0.001) / +70% (<0.001) |
+
+(`env_wind_vs_upwelling.csv`, `fig_wind_vs_upwelling.png`.) Independent, measured winds explain 40% of CUTI's detrended variance and show the same upward trend of about a fifth to a quarter of the mean per decade, so the transport component of the upwelling increase is real. They explain only 10% of BEUTI's detrended variance, and BEUTI's trend is three times larger relative to its mean; the extra variance and trend sit in the modelled nitrate concentration. In the winter window, buoy wave energy and storm hours correlate −0.46 to −0.48 (detrended −0.55 to −0.57) with winter CUTI (storms with downwelling), which validates the pre-specified CUTI-winter predictor as a storminess proxy and supplies a direct one.
+
+### 6.4 Lower-river gauges
+
+The lowest main-stem gauge (Port Westward / Beaver Army Terminal, 14246900, from June 1991) correlates 0.97 with The Dalles for the Apr–Jun freshet and carries 1.22 times its flow; adding the Willamette (12% of Dalles flow, r = 0.45 with it) raises the correlation to 0.985 (`env_discharge_gauges.csv`). The cached Dalles series matches a fresh download exactly except for provisional-to-approved revisions after October 2023. The freshet predictor is therefore unaffected; the lower gauges matter only for winter plume volume.
+
+### 6.5 What is still to do
+
+1. Email the index authors (§6.1, §6.3). 2. Decide the manuscript vintage (task T35). 3. Declare the new predictor family (wind-driven upwelling, winter wave energy, lower-river freshet, beach-level satellite SST) before testing it (task T12). 4. Derive spring-transition timing and relaxation frequency from the hourly winds (`external/raw/`, regenerable).

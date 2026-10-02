@@ -17,7 +17,7 @@ Read [`docs/methodology-review.md`](docs/methodology-review.md) §1 for the key 
 ./run_pipeline.sh                # ~1.5 min; rebuilds 02_data/derived/ and 03_analyses/robust-reanalysis/,
                                  # then compiles every figure and table into 03_analyses/robust-reanalysis/report.md (+ .html)
 ./run_pipeline.sh --fast         # ~1 min with 200 surrogates, into the git-ignored robust-reanalysis-fast/
-./run_pipeline.sh --list         # steps; --help for all flags (--steps, --from, --out, --notebook, --install)
+./run_pipeline.sh --list         # steps; --help for all flags (--steps, --from, --out, --vintage, --notebook, --install)
 # Windows: Rscript 01_code/R/run_all.R [flags]
 ```
 
@@ -29,9 +29,9 @@ The legacy notebook `01_code/razor-clam-recruitment-analysis.Rmd` can still be k
 
 | Path | Contents |
 |---|---|
-| `01_code/` | Analysis code. `R/` holds the robust re-analysis pipeline (primary) and `R/acquire/` the fetch scripts for external environmental products; `razor-clam-recruitment-analysis.Rmd` is the legacy exploratory notebook; `archive/` holds earlier notebook versions |
+| `01_code/` | Analysis code. `R/` holds the robust re-analysis pipeline (primary) and `R/acquire/` the fetch scripts for external environmental products (satellite SST, buoy winds and waves, lower-river gauges, current index vintages; run 2026-10-02); `razor-clam-recruitment-analysis.Rmd` is the legacy exploratory notebook; `archive/` holds earlier notebook versions |
 | `run_pipeline.sh` | Batch runner (wrapper around `01_code/R/run_all.R`) |
-| `02_data/` | Raw inputs (abundance estimates, shell lengths, environmental series) and `derived/` analysis-ready tables |
+| `02_data/` | Raw inputs (abundance estimates, shell lengths, environmental series), `Environmental Data/external/` (fetched products with provenance) and `derived/` analysis-ready tables |
 | `03_analyses/` | Outputs. `robust-reanalysis/` (current) and `20260322-recruitment-analysis/` (legacy notebook run, superseded) |
 | `docs/` | `methodology-review.md`: full review of methods, data and results, with recommendations. `environmental-record-options.md`: diagnosis of the patchwork environmental record and evaluated options for a homogeneous one |
 | `manuscript/` | Draft manuscript and its figure and table sources |

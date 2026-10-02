@@ -19,8 +19,10 @@ Outputs of `./run_pipeline.sh` (`01_code/R/run_all.R`). Do not edit by hand; rer
 | `fig_forecast_skill.png` | 06 | Out-of-sample skill: leaky vs honest selection, persistence, carry-over |
 | `fig_env_coverage.png` | 09 | Month-by-month coverage of every environmental source |
 | `fig_legacy_idw_vs_homogenized.png` | 09 | Legacy station-blended beach temperature vs the homogenised regional anomaly |
-| `fig_sst_homogenization.png` | 09 | Regional SST anomaly under four constructions, with +/- 2 SE |
+| `fig_sst_homogenization.png` | 09 | Regional SST anomaly under six constructions (buoys, OISST, MUR), with +/- 2 SE |
 | `fig_beuti_homogeneity.png` | 09 | May-Aug BEUTI, CUTI and their ratio at 46N/47N with the 2010/2011 product boundary |
+| `fig_index_vintages.png` | 09 | The pre-specified BEUTI, CUTI and PDO windows under the cached snapshots and the current server files |
+| `fig_wind_vs_upwelling.png` | 09 | Buoy-measured alongshore wind stress (May-Aug) against CUTI and BEUTI at 47N |
 
 ## Tables (`tables/`, CSV)
 
@@ -54,5 +56,8 @@ Outputs of `./run_pipeline.sh` (`01_code/R/run_all.R`). Do not edit by hand; rer
 | `env_sst_variants.csv`, `env_sst_variant_effects.csv` | 09 | Agreement among SST constructions and the SST effect under each |
 | `env_sst_station_parameters.csv` | 09 | Station gains, error SDs, leave-one-station-out agreement |
 | `env_beuti_step_tests.csv`, `env_beuti_latitude_periods.csv`, `env_index_annual_correlations.csv` | 09 | BEUTI/CUTI trend, 2011 step and breakpoint tests; latitude x period means; cross-index correlations |
+| `env_index_vintages.csv`, `env_index_vintage_effects.csv` | 09 | Cached vs current BEUTI/CUTI/PDO vintages (agreement, trends, step tests) and the pre-specified tests refitted under each |
+| `env_satellite_vs_buoy.csv` | 09 | OISST and MUR against the regional and beach-local buoy constructions, by beach; north-south coherence |
+| `env_wind_vs_upwelling.csv`, `env_discharge_gauges.csv` | 09 | Buoy wind stress, Ekman transport and winter waves vs CUTI/BEUTI (correlations, trends as share of mean); lower-Columbia gauges vs The Dalles |
 
 Seeds are fixed (`SEED` in `01_code/R/00_config.R`), so surrogate-based p-values are reproducible to Monte Carlo precision (2,000 draws; ±0.01 near p = 0.05).

@@ -4,7 +4,7 @@ All analysis code. Run everything from the **repository root** (the folder with 
 
 ## `R/`: robust re-analysis pipeline (primary)
 
-`./run_pipeline.sh` (or `Rscript 01_code/R/run_all.R`) runs the scripts in order (~1.5 min), logs timing to `run_log.txt`, and compiles the report. Outputs go to `02_data/derived/` and `03_analyses/robust-reanalysis/`. Flags: `--fast`, `--steps=..`, `--from=..`, `--out=DIR`, `--no-report`, `--notebook`, `--install`, `--list`, `--help`.
+`./run_pipeline.sh` (or `Rscript 01_code/R/run_all.R`) runs the scripts in order (~1.5 min), logs timing to `run_log.txt`, and compiles the report. Outputs go to `02_data/derived/` and `03_analyses/robust-reanalysis/`. Flags: `--fast`, `--steps=..`, `--from=..`, `--out=DIR`, `--vintage=cached|current` (which BEUTI/CUTI/PDO files feed the predictors), `--no-report`, `--notebook`, `--install`, `--list`, `--help`.
 
 | Script | Purpose | Main outputs |
 |---|---|---|
@@ -19,14 +19,14 @@ All analysis code. Run everything from the **repository root** (the folder with 
 | `07_figures_overview.R` | Study-area map, abundance and predictor time series | `fig_study_area`, `fig_abundance_timeseries`, `fig_predictor_timeseries` |
 | `08_forecast_2025.R` | Archives forecasts for the 2025 survey (pre-recruits of year class 2024; carry-over recruits) made before 2025 estimates enter the repo. Never overwrites an existing archive | `forecast_2025_archived` |
 | `lib_env_homogenize.R` | Two-way station model (climatology + regional anomaly + gain, ALS, precision weights) used by `01` and `09`. Shared helper | none |
-| `09_env_record_diagnostics.R` | Coverage of every environmental source; legacy IDW blend vs homogenised anomaly (station-era offsets); alternative SST constructions and their effect on the SST test; station parameters with leave-one-out checks; BEUTI/CUTI trend, 2011 step and breakpoint tests; cross-index correlations | `fig_env_coverage`, `fig_legacy_idw_vs_homogenized`, `fig_sst_homogenization`, `fig_beuti_homogeneity`; `env_*` |
+| `09_env_record_diagnostics.R` | Coverage of every environmental source; legacy IDW blend vs homogenised anomaly (station-era offsets); alternative SST constructions (buoys, OISST, MUR) and their effect on the SST test; station parameters with leave-one-out checks; BEUTI/CUTI trend, 2011 step and breakpoint tests; cross-index correlations; cached vs current index vintages with the pre-specified tests refitted under each; satellite vs buoy agreement by beach; buoy winds and waves vs the upwelling indices; lower-Columbia gauges | `fig_env_coverage`, `fig_legacy_idw_vs_homogenized`, `fig_sst_homogenization`, `fig_beuti_homogeneity`, `fig_index_vintages`, `fig_wind_vs_upwelling`; `env_*` |
 | `10_report.R` | Compiles key results, all figures and all tables into `report.md`, and `report.html` when pandoc is available (PATH, or RStudio's copy via rmarkdown) | `report.md`, `report.html` |
 | `run_all.R` | Batch runner: argument parsing, dependency check, fresh environment per step, logging (`run_log.txt`, `run_info.txt`, `sessionInfo.txt`), optional legacy-notebook run | none |
-| `acquire/` | Fetch scripts for external products (OISST, MUR, NDBC winds/waves, lower-Columbia gauges), written without network access and not yet executed; see `acquire/README.md` | `02_data/Environmental Data/external/` |
+| `acquire/` | Fetch scripts for external products (OISST, MUR, NDBC winds/waves, lower-Columbia gauges, current BEUTI/CUTI/PDO vintages); run 2026-10-02, outputs committed; see `acquire/README.md` | `02_data/Environmental Data/external/` |
 
 Figures are in `03_analyses/robust-reanalysis/figures/` (PNG, 300 dpi); tables are in `.../tables/` (CSV).
 
-**Packages:** tidyverse, readxl, lubridate, nlme, lme4, here, maps, mapdata (checked by `run_all.R`; `--install` installs missing ones). Optional: pandoc for `report.html`; knitr, openxlsx, scales, corrplot, patchwork, sf, jsonlite for `--notebook`.
+**Packages:** tidyverse, readxl, lubridate, nlme, lme4, here, maps, mapdata (checked by `run_all.R`; `--install` installs missing ones). Optional: pandoc for `report.html`; knitr, openxlsx, scales, corrplot, patchwork, sf, jsonlite for `--notebook`; rerddap, dataRetrieval, ncdf4 and network access for `acquire/`.
 
 ## `razor-clam-recruitment-analysis.Rmd`: legacy exploratory notebook
 

@@ -29,7 +29,9 @@ FIG_CAPTIONS <- c(
   fig_env_coverage = "Coverage of every environmental source by year-month; the clam survey period is boxed.",
   fig_legacy_idw_vs_homogenized = "The legacy notebook's station-blended beach temperature (points, coloured by dominant station) against the homogenised regional anomaly (line).",
   fig_sst_homogenization = "The regional SST anomaly under four constructions, with +/- 2 SE of the pipeline series.",
-  fig_beuti_homogeneity = "May-Aug BEUTI, CUTI and their ratio at 46N and 47N, with the 2010/2011 source-model boundary marked.")
+  fig_beuti_homogeneity = "May-Aug BEUTI, CUTI and their ratio at 46N and 47N, with the 2010/2011 source-model boundary marked.",
+  fig_index_vintages = "The pre-specified BEUTI, CUTI and PDO windows under the cached snapshots and the current server files.",
+  fig_wind_vs_upwelling = "Buoy-measured alongshore wind stress (May-Aug) against CUTI and BEUTI at 47N, all as z-scores.")
 
 TAB_DESCRIPTIONS <- c(
   abundance_summary = "Median, range and SD of log abundance by beach and size class",
@@ -67,7 +69,12 @@ TAB_DESCRIPTIONS <- c(
   env_sst_station_parameters = "Station gains, error SDs and leave-one-station-out agreement",
   env_beuti_step_tests = "Trend, 2011 level shift and best single breakpoint for BEUTI, CUTI and their ratio",
   env_beuti_latitude_periods = "BEUTI and CUTI May-Aug means by latitude bin and period",
-  env_index_annual_correlations = "Annual correlations among indices, raw and detrended")
+  env_index_annual_correlations = "Annual correlations among indices, raw and detrended",
+  env_index_vintages = "Cached vs current vintages of BEUTI, CUTI (daily and May-Aug) and the PDO (monthly and May-Sep): agreement, trends, step tests",
+  env_index_vintage_effects = "The pre-specified BEUTI, CUTI-winter and PDO tests refitted under each index vintage (same year classes)",
+  env_satellite_vs_buoy = "OISST and MUR satellite anomalies against the regional (V1) and beach-local (V3) buoy constructions, by beach",
+  env_wind_vs_upwelling = "Buoy wind stress, Ekman transport and winter wave energy against CUTI/BEUTI: correlations and trends",
+  env_discharge_gauges = "Lower-Columbia gauges (Beaver, Willamette) against The Dalles, Apr-Jun")
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 fmt_num <- function(v) {

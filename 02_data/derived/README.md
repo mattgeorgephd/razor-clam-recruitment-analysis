@@ -32,7 +32,8 @@ One row per year × month, 1988–2026.
 | `sst_anom_se` | Standard error of `sst_anom` (0.15–0.4 °C depending on how many stations report) |
 | `n_sst_stations` | Number of stations contributing to `sst_anom` |
 | `sst_anom_naive3` | The earlier construction (mean of naive anomalies at 46029, 46041, 46211), kept for comparison only |
-| `<stem>_*` | Any external product found in `02_data/Environmental Data/external/<stem>_monthly.csv` (none committed yet) |
+| `index_vintage` | Which BEUTI/CUTI/PDO vintage built this table: `cached` (default) or `current` (`run_all.R --vintage=current`) |
+| `oisst_*`, `mur_*`, `ndbc_met_*`, `columbia_lower_*`, `upwelling_*`, `pdo_ncei`, `pdo_psl` | External products joined from `02_data/Environmental Data/external/<stem>_monthly.csv` (satellite SST, buoy winds and waves, lower-Columbia gauges, current index vintages); see that folder's README |
 
 ## `sst_station_parameters.csv`
 

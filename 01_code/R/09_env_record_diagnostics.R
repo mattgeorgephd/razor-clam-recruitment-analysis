@@ -3,7 +3,8 @@
 # does the patchwork matter?
 # ═══════════════════════════════════════════════════════════════════════════════
 # Companion to docs/environmental-record-options.md. Everything here uses the
-# cached inputs in 02_data/Environmental Data; nothing is downloaded.
+# cached inputs in 02_data/Environmental Data (and, for F-H, the external
+# products already fetched there); nothing is downloaded.
 #
 # (A) Coverage of every environmental source by year-month (fig_env_coverage,
 #     env_coverage_by_station, env_coverage_by_year)
@@ -19,6 +20,17 @@
 #     best single breakpoint, latitude x period means, cross-index correlations
 #     (fig_beuti_homogeneity, env_beuti_step_tests, env_beuti_latitude_periods,
 #     env_index_annual_correlations)
+# Sections F-H run only when the corresponding external products exist in
+# 02_data/Environmental Data/external/ (fetched by 01_code/R/acquire/):
+# (F) Index vintages: the cached BEUTI/CUTI/PDO snapshots against the current
+#     server files, and the pre-specified BEUTI and PDO tests refitted under each
+#     (fig_index_vintages, env_index_vintages, env_index_vintage_effects)
+# (G) Satellite SST (OISST, MUR) against the buoy constructions: added to the
+#     variant table of (C), per-beach agreement, north-south coherence, and
+#     beach-specific SST effects (env_satellite_vs_buoy)
+# (H) Buoy-measured wind stress and waves against BEUTI/CUTI (trend and
+#     interannual agreement), and lower-Columbia gauges against The Dalles
+#     (fig_wind_vs_upwelling, env_wind_vs_upwelling, env_discharge_gauges)
 
 source(here::here("01_code", "R", "00_config.R"))
 source(here::here("01_code", "R", "lib_env_homogenize.R"))
@@ -66,9 +78,18 @@ cov_idx <- env %>% select(year, month, beuti_47N, cuti_47N, q_cms, pdo) %>%
   transmute(series = recode(name, beuti_47N = "BEUTI 47N", cuti_47N = "CUTI 47N",
                             q_cms = "Columbia discharge", pdo = "PDO"),
             station = series, class = "indices", year, month, status = "full month")
-cov <- bind_rows(cov_idx, cov_temp, cov_salt) %>%
+# external products (acquire/): shown when present
+EXT_SERIES <- c(oisst_anom_regional = "OISST regional (satellite)", mur_anom_copalis = "MUR Copalis (satellite)",
+                ndbc_met_tau_along_anom = "NDBC wind stress (buoys)", ndbc_met_hs_anom = "NDBC wave height (buoys)",
+                columbia_lower_q_beaver_cms = "Columbia at Beaver (USGS)", upwelling_beuti_47N = "BEUTI 47N, current vintage")
+ext_present <- intersect(names(EXT_SERIES), names(env))
+cov_ext <- if (length(ext_present)) env %>% select(year, month, all_of(ext_present)) %>%
+  pivot_longer(-c(year, month)) %>% filter(!is.na(value)) %>%
+  transmute(series = EXT_SERIES[name], station = series, class = "external products", year, month,
+            status = "full month") else NULL
+cov <- bind_rows(cov_idx, cov_ext, cov_temp, cov_salt) %>%
   mutate(date = ym_date(year, month),
-         class = factor(class, levels = c("indices", "temperature: open coast",
+         class = factor(class, levels = c("indices", "external products", "temperature: open coast",
                                           "temperature: river mouth", "temperature: estuary/harbor",
                                           "temperature: other", "salinity (OOI moorings)")))
 series_order <- cov %>% group_by(class, series) %>% summarise(first = min(date), .groups = "drop") %>%
@@ -92,7 +113,7 @@ p_cov <- ggplot(cov, aes(date, series, fill = class, alpha = status)) +
 save_fig(p_cov, "fig_env_coverage", 11, 8)
 
 months_1997_2024 <- 28 * 12
-cov_station <- cov %>% filter(class != "indices") %>%
+cov_station <- cov %>% filter(!class %in% c("indices", "external products")) %>%
   group_by(series, station, class) %>%
   summarise(first_year = min(year), last_year = max(year),
             months_full = sum(status == "full month"), months_partial = sum(status == "partial month"),
@@ -110,6 +131,9 @@ cov_year <- env %>% filter(year %in% 1988:2025) %>% group_by(year) %>%
             discharge = sum(!is.na(q_cms)), pdo = sum(!is.na(pdo)),
             sst_homogenised = sum(!is.na(sst_anom)), sst_naive3 = sum(!is.na(sst_anom_naive3)),
             mean_sst_stations = mean(n_sst_stations), mean_sst_se = mean(sst_anom_se, na.rm = TRUE),
+            across(any_of(c(oisst = "oisst_anom_regional", mur = "mur_anom_copalis",
+                            ndbc_wind = "ndbc_met_tau_along_anom", ndbc_wave = "ndbc_met_hs_anom",
+                            columbia_beaver = "columbia_lower_q_beaver_cms")), ~ sum(!is.na(.x))),
             .groups = "drop")
 write_tab(cov_year, "env_coverage_by_year")
 
@@ -182,6 +206,21 @@ variants <- env %>% transmute(year, month, date = ym_date(year, month),
               summarise(`V3 beach-local IDW of station anomalies (mean of 5)` = mean(anom_local), .groups = "drop"),
             by = c("year", "month")) %>%
   filter(year %in% 1990:2025)
+# Satellite products, when fetched (acquire/fetch_oisst.R, fetch_mur.R). Their
+# anomalies are relative to their own climatologies (OISST 1991-2020, MUR
+# 2003-2020), so the comparison is about variability, not level.
+beach_keys <- gsub(" ", "_", tolower(BEACHES))
+if ("oisst_anom_regional" %in% names(env)) {
+  oi <- env %>% transmute(year, month, `V4 OISST regional, 0.25 deg satellite` = oisst_anom_regional,
+                          oisst_beach_mean = rowMeans(across(any_of(paste0("oisst_anom_", beach_keys))), na.rm = TRUE))
+  variants <- variants %>% left_join(oi, by = c("year", "month"))
+}
+if (any(grepl("^mur_anom_", names(env)))) {
+  mu <- env %>% transmute(year, month, `V5 MUR nearshore 1 km satellite, mean of 5 beaches` =
+                            rowMeans(across(all_of(paste0("mur_anom_", beach_keys))), na.rm = TRUE)) %>%
+    mutate(across(-c(year, month), ~ ifelse(is.nan(.x), NA_real_, .x)))
+  variants <- variants %>% left_join(mu, by = c("year", "month"))
+}
 vcols <- names(variants)[grepl("^V", names(variants))]
 
 annual <- function(df, col, months = 5:9) df %>% filter(month %in% months) %>%
@@ -241,12 +280,12 @@ p_var_m <- variants %>% select(date, all_of(vcols[!grepl("V1u", vcols)])) %>%
                   ymax = `V1 homogenised open coast (pipeline)` + 2 * se_v1),
               inherit.aes = FALSE, fill = "grey80", alpha = 0.6) +
   geom_line(linewidth = 0.4) +
-  scale_colour_manual(values = c("#D55E00", "black", "#0072B2", "#009E73"), name = NULL) +
+  scale_colour_manual(values = c("#D55E00", "black", "#0072B2", "#009E73", "#CC79A7", "#E69F00"), name = NULL) +
   scale_x_date(date_breaks = "5 years", date_labels = "%Y") +
   labs(x = NULL, y = "Regional SST anomaly (deg C)",
-       title = "Regional SST anomaly under four constructions",
+       title = paste0("Regional SST anomaly under ", sum(!grepl("V1u", vcols)), " constructions"),
        subtitle = "Grey band: +/- 2 SE of the pipeline series (V1). Series overlap closely except where few stations report.") +
-  theme_ms(9) + guides(colour = guide_legend(nrow = 2))
+  theme_ms(9) + guides(colour = guide_legend(nrow = 3))
 save_fig(p_var_m, "fig_sst_homogenization", 11, 5.5)
 
 # ═══ (D) Station parameters and leave-one-station-out check ═════════════════
@@ -321,7 +360,7 @@ save_fig(p_beuti, "fig_beuti_homogeneity", 8, 7.5)
 
 # Cross-index annual correlations (raw and linearly detrended), 1991-2024
 ann_tab <- env %>% filter(year %in% 1991:2024) %>% group_by(year) %>%
-  summarise(`BEUTI May-Aug 47N` = mean(beuti_47N[month %in% 5:8]),
+  summarise(`BEUTI May-Aug 47N` = mean(beuti_47N[month %in% 5:8]),      # pipeline vintage (INDEX_VINTAGE)
             `CUTI May-Aug 47N` = mean(cuti_47N[month %in% 5:8]),
             `SST anomaly May-Sep` = mean(sst_anom[month %in% 5:9], na.rm = TRUE),
             `PDO May-Sep` = mean(pdo[month %in% 5:9]),
@@ -332,6 +371,315 @@ dt_cor <- cor(dt %>% select(-year), use = "pairwise.complete.obs")
 write_tab(bind_rows(as_tibble(raw_cor, rownames = "series") %>% mutate(type = "raw", .before = 1),
                     as_tibble(dt_cor, rownames = "series") %>% mutate(type = "detrended", .before = 1)),
           "env_index_annual_correlations")
+
+
+# ═══ Shared helpers for F-H ════════════════════════════════════════════════
+# Pooled mixed model of 04_confirmatory_models.R for an arbitrary predictor
+# given per beach and year class: y ~ beach + trend + spawners + doy + x + (1|yc).
+survey_tab <- read_csv(file.path(DERIVED, "survey_beach_year.csv"), show_col_types = FALSE)
+cohort_full <- cohort %>%
+  left_join(survey_tab %>% transmute(beach, year_class = survey_year - 2L, doy_next2 = survey_doy),
+            by = c("beach", "year_class"))
+# As in 04, the predictor is z-scored over every beach x year-class row of the
+# predictor table (1988-2024) before the model data are selected, so estimates
+# are per SD on the same scale as confirmatory_pooled.csv.
+model_rows <- function(pred, resp, years = NULL) {   # pred: tibble(beach, year, v) over 1988-2024
+  doy <- if (resp == "log_pre_next") "doy_next" else "doy_next2"
+  d <- cohort_full %>% inner_join(pred %>% mutate(x = zs(v)), by = c("beach", "year_class" = "year"))
+  if (!is.null(years)) d <- d %>% filter(year_class %in% years)
+  d %>% filter(!is.na(.data[[resp]]), !is.na(log_spawners), !is.na(.data[[doy]]), !is.na(x)) %>%
+    group_by(beach) %>%
+    mutate(spawn_c = log_spawners - mean(log_spawners), doy_c = .data[[doy]] - mean(.data[[doy]])) %>%
+    ungroup() %>%
+    mutate(y = .data[[resp]], trend = (year_class - 2010) / 10, yc = factor(year_class),
+           beach = factor(beach, BEACHES))
+}
+lmm_effect <- function(pred, resp = "log_pre_next", years = NULL) {
+  d <- model_rows(pred, resp, years)
+  m0 <- lmer(y ~ beach + trend + spawn_c + doy_c + (1 | yc), data = d, REML = FALSE)
+  m1 <- update(m0, . ~ . + x)
+  co <- summary(m1)$coefficients["x", ]
+  tibble(response = resp, n_beach_years = nrow(d), n_year_classes = n_distinct(d$yc),
+         year_classes = paste(range(d$year_class), collapse = "-"),
+         estimate = co[["Estimate"]], se = co[["Std. Error"]], p_lrt = anova(m0, m1)$`Pr(>Chisq)`[2])
+}
+# Coastwide index with GLS-AR(1), exactly as 04 (sensitivity iii): beach-wise
+# standardised residuals of y ~ spawners + survey date, averaged per year class,
+# against the beach-mean of the z-scored predictor.
+coast_effect_04 <- function(pred, resp = "log_pre_next", years = NULL) {
+  d <- model_rows(pred, resp, years) %>%
+    group_by(beach) %>% mutate(res = zs(resid(lm(y ~ spawn_c + doy_c)))) %>% ungroup() %>%
+    group_by(year_class) %>% summarise(index = mean(res), x = mean(x), .groups = "drop") %>%
+    mutate(trend = (year_class - 2010) / 10)
+  f <- tryCatch(gls(index ~ trend + x, data = d, correlation = corAR1(form = ~ year_class), method = "REML"),
+                error = function(e) gls(index ~ trend + x, data = d, method = "REML"))
+  tt <- summary(f)$tTable
+  tibble(response = paste(resp, "coastwide index, GLS-AR(1)"), n_beach_years = NA_integer_, n_year_classes = nrow(d),
+         year_classes = paste(range(d$year_class), collapse = "-"),
+         estimate = tt["x", 1], se = tt["x", 2], p_lrt = tt["x", 4])
+}
+# window mean per beach and year class from a monthly table (year, month, value cols)
+beach_window <- function(df, cols_by_lat, months = 5:8, offsets = rep(0L, length(months)), min_months = 3) {
+  map_dfr(BEACHES, function(b) {
+    col <- cols_by_lat[[BEACH_LAT_BIN[[b]]]]
+    map_dfr(1988:2024, function(Y) {
+      v <- df %>% semi_join(tibble(year = Y + offsets, month = months), by = c("year", "month")) %>% pull(all_of(col))
+      tibble(beach = b, year = Y, v = if (sum(!is.na(v)) >= min_months) mean(v, na.rm = TRUE) else NA_real_)
+    })
+  }) %>% filter(!is.na(v))
+}
+ann_cor <- function(x, y, year) {   # raw and detrended correlation of two annual series
+  ok <- !is.na(x) & !is.na(y); x <- x[ok]; y <- y[ok]; year <- year[ok]
+  c(n = length(x), r = cor(x, y), r_detrended = cor(resid(lm(x ~ year)), resid(lm(y ~ year))))
+}
+trend_of <- function(x, year) { ok <- !is.na(x); f <- summary(lm(x[ok] ~ year[ok]))$coefficients
+  c(trend_per_decade = f[2, 1] * 10, trend_p = f[2, 4]) }
+
+# ═══ (F) Index vintages ════════════════════════════════════════════════════════
+ext_dir <- file.path(ENV_DIR, "external")
+if (all(c("upwelling_beuti_47N", "pdo_ncei") %in% names(env))) {
+  # (F1) daily and annual agreement between the cached snapshot and the current files
+  cur_files <- c(BEUTI = tail(sort(list.files(ext_dir, "^BEUTI_daily_\\d{4}-\\d{2}-\\d{2}\\.csv$", full.names = TRUE)), 1),
+                 CUTI  = tail(sort(list.files(ext_dir, "^CUTI_daily_\\d{4}-\\d{2}-\\d{2}\\.csv$", full.names = TRUE)), 1))
+  vintage_date <- sub("^.*_(\\d{4}-\\d{2}-\\d{2})\\.csv$", "\\1", cur_files[["BEUTI"]])
+  idx_pair <- map_dfr(c("BEUTI", "CUTI"), function(idx) {
+    cached <- read_csv(file.path(ENV_DIR, paste0(idx, "_daily.csv")), show_col_types = FALSE)
+    current <- read_csv(cur_files[[idx]], show_col_types = FALSE)
+    j <- inner_join(cached, current, by = c("year", "month", "day"), suffix = c("_cached", "_current"))
+    map_dfr(c("46N", "47N"), function(L) {
+      xc <- j[[paste0(L, "_cached")]]; xn <- j[[paste0(L, "_current")]]
+      a <- j %>% filter(month %in% 5:8) %>% group_by(year) %>%
+        summarise(cached = mean(.data[[paste0(L, "_cached")]]), current = mean(.data[[paste0(L, "_current")]]),
+                  n = n(), .groups = "drop") %>% filter(n >= 100, year <= 2024)
+      tibble(index = idx, lat = L, daily_n = sum(!is.na(xc) & !is.na(xn)),
+             daily_r = cor(xc, xn, use = "complete.obs"), daily_share_changed = mean(abs(xn - xc) > 1e-3, na.rm = TRUE),
+             daily_rmse = sqrt(mean((xn - xc)^2, na.rm = TRUE)),
+             MayAug_r = cor(a$cached, a$current), MayAug_r_detrended = ann_cor(a$cached, a$current, a$year)[["r_detrended"]],
+             MayAug_mean_cached = mean(a$cached), MayAug_mean_current = mean(a$current),
+             MayAug_trend_cached = trend_of(a$cached, a$year)[["trend_per_decade"]],
+             MayAug_trend_current = trend_of(a$current, a$year)[["trend_per_decade"]],
+             MayAug_max_abs_diff = max(abs(a$current - a$cached)), year_max_diff = a$year[which.max(abs(a$current - a$cached))])
+    })
+  })
+  # step tests (as in E) on the current vintage
+  step_cur <- map_dfr(c("BEUTI", "CUTI"), function(idx) {
+    d <- read_csv(cur_files[[idx]], show_col_types = FALSE) %>% filter(month %in% 5:8) %>%
+      pivot_longer(c(`46N`, `47N`), names_to = "lat") %>% group_by(year, lat) %>%
+      summarise(v = mean(value, na.rm = TRUE), n = n(), .groups = "drop") %>% filter(n >= 100, year <= 2024)
+    map_dfr(c("46N", "47N"), function(L) step_test(d %>% filter(lat == L), "v") %>%
+              transmute(index = idx, lat = L, step_2011_current = step_2011, step_2011_p_current = step_2011_p,
+                        best_break_year_current = best_break_year))
+  })
+  idx_pair <- idx_pair %>% left_join(step_cur, by = c("index", "lat"))
+  # PDO: cached vs NCEI vs PSL
+  pdo_m <- env %>% select(year, month, ncei = pdo_ncei, psl = pdo_psl) %>%
+    inner_join(read_csv(file.path(ENV_DIR, "pdo_index.csv"), show_col_types = FALSE) %>%
+                 transmute(year = as.integer(year), month = if (is.numeric(month)) as.integer(month) else match(month, month.abb),
+                           cached = if_else(abs(pdo) > 90, NA_real_, pdo)), by = c("year", "month")) %>%
+    filter(year %in% 1950:2025)
+  pdo_a <- pdo_m %>% filter(month %in% 5:9, year %in% 1996:2024) %>% group_by(year) %>%
+    summarise(across(c(cached, ncei, psl), mean), .groups = "drop")
+  pdo_row <- map_dfr(c("ncei", "psl"), function(src) tibble(
+    index = "PDO", lat = src, daily_n = sum(!is.na(pdo_m$cached) & !is.na(pdo_m[[src]])),
+    daily_r = cor(pdo_m$cached, pdo_m[[src]], use = "complete.obs"),
+    daily_share_changed = mean(abs(pdo_m[[src]] - pdo_m$cached) > 0.01, na.rm = TRUE),
+    daily_rmse = sqrt(mean((pdo_m[[src]] - pdo_m$cached)^2, na.rm = TRUE)),
+    MayAug_r = cor(pdo_a$cached, pdo_a[[src]]), MayAug_r_detrended = ann_cor(pdo_a$cached, pdo_a[[src]], pdo_a$year)[["r_detrended"]],
+    MayAug_mean_cached = mean(pdo_a$cached), MayAug_mean_current = mean(pdo_a[[src]]),
+    MayAug_trend_cached = trend_of(pdo_a$cached, pdo_a$year)[["trend_per_decade"]],
+    MayAug_trend_current = trend_of(pdo_a[[src]], pdo_a$year)[["trend_per_decade"]],
+    MayAug_max_abs_diff = max(abs(pdo_a[[src]] - pdo_a$cached)), year_max_diff = pdo_a$year[which.max(abs(pdo_a[[src]] - pdo_a$cached))]))
+  vint_tab <- bind_rows(idx_pair, pdo_row) %>%
+    mutate(current_vintage = ifelse(index == "PDO", "downloaded with the indices", vintage_date), .after = lat)
+  # note: for the PDO rows, "daily_*" columns are monthly and "MayAug_*" columns are May-Sep (the pdo_larval window)
+  write_tab(vint_tab, "env_index_vintages")
+
+  # (F2) the pre-specified tests under each vintage (pooled LMM of 04 and the coastwide GLS of C)
+  cur_monthly <- env %>% select(year, month, beuti_46N = upwelling_beuti_46N, beuti_47N = upwelling_beuti_47N,
+                                cuti_46N = upwelling_cuti_46N, cuti_47N = upwelling_cuti_47N, pdo_ncei, pdo_psl)
+  # the cached vintage is read from the snapshot files themselves, so this
+  # comparison is the same whichever vintage the pipeline was run with
+  monthly_cached <- function(idx, name) read_csv(file.path(ENV_DIR, paste0(idx, "_daily.csv")), show_col_types = FALSE) %>%
+    group_by(year, month) %>% summarise(across(c(`46N`, `47N`), mean), n = n(), .groups = "drop") %>%
+    filter(n >= 20) %>% transmute(year, month, !!paste0(name, "_46N") := `46N`, !!paste0(name, "_47N") := `47N`)
+  pdo_cached <- read_csv(file.path(ENV_DIR, "pdo_index.csv"), show_col_types = FALSE) %>%
+    transmute(year = as.integer(year), month = if (is.numeric(month)) as.integer(month) else match(month, month.abb),
+              pdo = if_else(abs(pdo) > 90, NA_real_, pdo)) %>% filter(!is.na(month))
+  cached_monthly <- monthly_cached("BEUTI", "beuti") %>%
+    full_join(monthly_cached("CUTI", "cuti"), by = c("year", "month")) %>%
+    full_join(pdo_cached, by = c("year", "month"))
+  preds <- list(
+    `beuti_larval, cached` = beach_window(cached_monthly, c(`46N` = "beuti_46N", `47N` = "beuti_47N")),
+    `beuti_larval, current` = beach_window(cur_monthly, c(`46N` = "beuti_46N", `47N` = "beuti_47N")),
+    `cuti_winter, cached` = beach_window(cached_monthly, c(`46N` = "cuti_46N", `47N` = "cuti_47N"),
+                                         months = c(11, 12, 1, 2), offsets = c(0, 0, 1, 1)),
+    `cuti_winter, current` = beach_window(cur_monthly, c(`46N` = "cuti_46N", `47N` = "cuti_47N"),
+                                          months = c(11, 12, 1, 2), offsets = c(0, 0, 1, 1)),
+    `pdo_larval, cached` = beach_window(cached_monthly, c(`46N` = "pdo", `47N` = "pdo"), months = 5:9, offsets = rep(0, 5)),
+    `pdo_larval, NCEI` = beach_window(cur_monthly, c(`46N` = "pdo_ncei", `47N` = "pdo_ncei"), months = 5:9, offsets = rep(0, 5)),
+    `pdo_larval, PSL` = beach_window(cur_monthly, c(`46N` = "pdo_psl", `47N` = "pdo_psl"), months = 5:9, offsets = rep(0, 5)))
+  # restrict every variant to the same year classes so vintages, not coverage, drive differences
+  common_years <- reduce(purrr::map(preds, ~ unique(.x$year[.x$year %in% 1996:2024])), intersect)
+  vint_eff <- imap_dfr(preds, function(pr, nm) {
+    bind_rows(lmm_effect(pr, "log_pre_next", common_years), lmm_effect(pr, "log_rec_next2", common_years)) %>%
+      mutate(predictor = nm, .before = 1)
+  })
+  vint_gls <- imap_dfr(preds, function(pr, nm) {
+    coast_effect_04(pr, "log_pre_next", common_years) %>% mutate(predictor = nm, .before = 1)
+  })
+  write_tab(bind_rows(vint_eff, vint_gls), "env_index_vintage_effects")
+
+  # figure: annual windows under each vintage
+  f_ann <- bind_rows(
+    preds[["beuti_larval, cached"]] %>% filter(beach == "Copalis") %>% transmute(year, series = "BEUTI 47N, May-Aug", vintage = "cached snapshot", v),
+    preds[["beuti_larval, current"]] %>% filter(beach == "Copalis") %>% transmute(year, series = "BEUTI 47N, May-Aug", vintage = paste("server", vintage_date), v),
+    preds[["cuti_winter, cached"]] %>% filter(beach == "Copalis") %>% transmute(year, series = "CUTI 47N, Nov-Feb", vintage = "cached snapshot", v),
+    preds[["cuti_winter, current"]] %>% filter(beach == "Copalis") %>% transmute(year, series = "CUTI 47N, Nov-Feb", vintage = paste("server", vintage_date), v),
+    preds[["pdo_larval, cached"]] %>% filter(beach == "Copalis") %>% transmute(year, series = "PDO, May-Sep", vintage = "cached snapshot", v),
+    preds[["pdo_larval, NCEI"]] %>% filter(beach == "Copalis") %>% transmute(year, series = "PDO, May-Sep", vintage = "NCEI current", v),
+    preds[["pdo_larval, PSL"]] %>% filter(beach == "Copalis") %>% transmute(year, series = "PDO, May-Sep", vintage = "PSL current", v)) %>%
+    filter(year %in% 1988:2024)
+  p_vint <- ggplot(f_ann, aes(year, v, colour = vintage)) +
+    geom_line() + geom_point(size = 1) +
+    facet_wrap(~ series, ncol = 1, scales = "free_y") +
+    scale_colour_manual(values = c("black", "#D55E00", "#0072B2", "#009E73"), name = NULL) +
+    labs(x = NULL, y = "Window mean (predictor units)",
+         title = "Pre-specified predictor windows under the cached and current index vintages",
+         subtitle = "BEUTI/CUTI are regenerated by their authors from an updated reanalysis; the PDO is recomputed from revised ERSST.") +
+    theme_ms(9)
+  save_fig(p_vint, "fig_index_vintages", 8, 8)
+  message("09 (F): index vintages compared; BEUTI 47N May-Aug r(cached, current) = ",
+          round(idx_pair$MayAug_r[idx_pair$index == "BEUTI" & idx_pair$lat == "47N"], 3))
+} else message("09 (F): skipped (run acquire/fetch_climate_indices.R to compare index vintages)")
+
+# ═══ (G) Satellite SST against the buoy constructions ═══════════════════════
+has_oisst <- "oisst_anom_regional" %in% names(env); has_mur <- any(grepl("^mur_anom_", names(env)))
+if (has_oisst || has_mur) {
+  bl_m <- beach_local %>% select(beach, year, month, v3 = anom_local)
+  sat_long <- map_dfr(seq_along(BEACHES), function(i) {
+    b <- BEACHES[i]; k <- beach_keys[i]
+    env %>% transmute(year, month, beach = b,
+                      oisst = if (has_oisst && paste0("oisst_anom_", k) %in% names(env)) .data[[paste0("oisst_anom_", k)]] else NA_real_,
+                      mur   = if (has_mur) .data[[paste0("mur_anom_", k)]] else NA_real_) %>%
+      left_join(bl_m %>% filter(beach == b) %>% select(-beach), by = c("year", "month")) %>%
+      left_join(env %>% select(year, month, v1 = sst_anom), by = c("year", "month"))
+  }) %>% filter(year %in% 1990:2025)
+  rr <- function(x, y) if (sum(!is.na(x) & !is.na(y)) >= 24) cor(x, y, use = "complete.obs") else NA_real_
+  sat_ann <- sat_long %>% filter(month %in% 5:9) %>% group_by(beach, year) %>%
+    summarise(oisst = mean(oisst), mur = mean(mur), v1 = mean(v1), .groups = "drop") %>%
+    group_by(beach) %>% summarise(r_oisst_vs_V1_MaySep = rr(oisst, v1), r_mur_vs_V1_MaySep = rr(mur, v1), .groups = "drop")
+  sat_beach <- sat_long %>% group_by(beach) %>%
+    summarise(n_oisst = sum(!is.na(oisst)), n_mur = sum(!is.na(mur)),
+              r_oisst_vs_regional_buoy_V1 = rr(oisst, v1), r_mur_vs_regional_buoy_V1 = rr(mur, v1),
+              r_oisst_vs_beach_local_V3 = rr(oisst, v3), r_mur_vs_beach_local_V3 = rr(mur, v3),
+              r_oisst_vs_mur = rr(oisst, mur), .groups = "drop") %>%
+    left_join(sat_ann, by = "beach")
+  # north-south coherence (Long Beach vs Kalaloch) in each product: is one regional SST predictor adequate?
+  ns <- function(col) { w <- sat_long %>% select(year, month, beach, all_of(col)) %>%
+    pivot_wider(names_from = beach, values_from = all_of(col)); rr(w$`Long Beach`, w$Kalaloch) }
+  sat_beach <- bind_rows(sat_beach, tibble(beach = "Long Beach vs Kalaloch (north-south coherence)",
+                                           r_oisst_vs_beach_local_V3 = ns("v3"), r_oisst_vs_mur = NA_real_,
+                                           r_oisst_vs_regional_buoy_V1 = ns("oisst"), r_mur_vs_regional_buoy_V1 = ns("mur")))
+  write_tab(sat_beach, "env_satellite_vs_buoy")
+  # beach-specific SST effects (May-Sep of year class Y) in the pooled LMM
+  sat_eff <- map_dfr(c(oisst = "oisst", mur = "mur"), function(col) {
+    pr <- sat_long %>% filter(month %in% 5:9) %>% group_by(beach, year) %>%
+      summarise(v = if (sum(!is.na(.data[[col]])) >= 4) mean(.data[[col]], na.rm = TRUE) else NA_real_, .groups = "drop") %>%
+      filter(!is.na(v))
+    if (nrow(pr) < 30) return(NULL)
+    lmm_effect(pr, "log_pre_next") %>% mutate(variant = paste0(toupper(col), " beach-specific, pooled LMM (beach + trend + spawners + doy + (1|year class))"), .before = 1)
+  })
+  if (nrow(sat_eff)) write_tab(bind_rows(read_csv(file.path(TAB_DIR, "env_sst_variant_effects.csv"), show_col_types = FALSE),
+                                         sat_eff %>% select(variant, n_year_classes, estimate, se, p = p_lrt)),
+                               "env_sst_variant_effects")
+  message("09 (G): satellite SST compared with buoys; MUR 5-beach mean vs V1 monthly r = ",
+          round(var_tab$r_vs_V1_monthly[grepl("MUR", var_tab$variant)], 3))
+} else message("09 (G): skipped (run acquire/fetch_oisst.R and fetch_mur.R)")
+
+# ═══ (H) Buoy winds and waves vs the upwelling indices; lower-river gauges ══
+if ("ndbc_met_tau_along_anom" %in% names(env)) {
+  # NDBC series as absolute values (anomaly + station-mean climatology) so that
+  # trends can be expressed as a share of the seasonal mean, like the indices
+  w_ann <- env %>% filter(year %in% 1991:2024) %>%
+    mutate(tau_abs = ndbc_met_tau_along_anom + ndbc_met_tau_along_clim, ek_abs = ndbc_met_ekman_anom + ndbc_met_ekman_clim) %>%
+    group_by(year) %>%
+    summarise(`wind stress, alongshore (NDBC)` = if (sum(!is.na(tau_abs[month %in% 5:8])) >= 3) mean(tau_abs[month %in% 5:8], na.rm = TRUE) else NA_real_,
+              `Ekman transport (NDBC)` = if (sum(!is.na(ek_abs[month %in% 5:8])) >= 3) mean(ek_abs[month %in% 5:8], na.rm = TRUE) else NA_real_,
+              `CUTI 47N, current` = if ("upwelling_cuti_47N" %in% names(env)) mean(upwelling_cuti_47N[month %in% 5:8]) else NA_real_,
+              `BEUTI 47N, current` = if ("upwelling_beuti_47N" %in% names(env)) mean(upwelling_beuti_47N[month %in% 5:8]) else NA_real_,
+              `SST anomaly (V1)` = mean(sst_anom[month %in% 5:8], na.rm = TRUE), .groups = "drop") %>%
+    # cached vintage from the snapshot files (section E), independent of the pipeline's vintage
+    left_join(idx_ann %>% filter(lat == "47N") %>% transmute(year, `CUTI 47N, cached` = cuti, `BEUTI 47N, cached` = beuti), by = "year")
+  wv_ann <- env %>% mutate(wy = ifelse(month >= 11, year, year - 1L)) %>% filter(wy %in% 1991:2023, month %in% c(11, 12, 1, 2)) %>%
+    mutate(hs2_abs = ndbc_met_hs2_anom + ndbc_met_hs2_clim, storm_abs = ndbc_met_storm_anom + ndbc_met_storm_clim) %>%
+    group_by(year = wy) %>%
+    summarise(`wave energy Hs^2, Nov-Feb (NDBC)` = if (sum(!is.na(hs2_abs)) >= 3) mean(hs2_abs, na.rm = TRUE) else NA_real_,
+              `storm hours Hs > 4 m, Nov-Feb (NDBC)` = if (sum(!is.na(storm_abs)) >= 3) mean(storm_abs, na.rm = TRUE) else NA_real_,
+              .groups = "drop") %>%
+    left_join(read_csv(file.path(ENV_DIR, "CUTI_daily.csv"), show_col_types = FALSE) %>%
+                mutate(wy = ifelse(month >= 11, year, year - 1L)) %>% filter(month %in% c(11, 12, 1, 2)) %>%
+                group_by(year = wy) %>% summarise(`CUTI 47N, Nov-Feb, cached` = mean(`47N`), n = n(), .groups = "drop") %>%
+                filter(n >= 100) %>% select(-n), by = "year")
+  pairs <- list(c("wind stress, alongshore (NDBC)", "CUTI 47N, cached"), c("wind stress, alongshore (NDBC)", "BEUTI 47N, cached"),
+                c("wind stress, alongshore (NDBC)", "CUTI 47N, current"), c("wind stress, alongshore (NDBC)", "BEUTI 47N, current"),
+                c("Ekman transport (NDBC)", "CUTI 47N, cached"), c("wind stress, alongshore (NDBC)", "SST anomaly (V1)"),
+                c("CUTI 47N, cached", "SST anomaly (V1)"), c("BEUTI 47N, cached", "SST anomaly (V1)"))
+  wind_tab <- bind_rows(
+    map_dfr(pairs, function(p) { a <- ann_cor(w_ann[[p[1]]], w_ann[[p[2]]], w_ann$year)
+      tibble(season = "May-Aug", x = p[1], y = p[2], n = a[["n"]], r = a[["r"]], r_detrended = a[["r_detrended"]],
+             trend_x_per_decade = trend_of(w_ann[[p[1]]], w_ann$year)[["trend_per_decade"]],
+             trend_x_p = trend_of(w_ann[[p[1]]], w_ann$year)[["trend_p"]],
+             trend_y_per_decade = trend_of(w_ann[[p[2]]], w_ann$year)[["trend_per_decade"]],
+             trend_y_p = trend_of(w_ann[[p[2]]], w_ann$year)[["trend_p"]]) }),
+    map_dfr(list(c("wave energy Hs^2, Nov-Feb (NDBC)", "CUTI 47N, Nov-Feb, cached"),
+                 c("storm hours Hs > 4 m, Nov-Feb (NDBC)", "CUTI 47N, Nov-Feb, cached")), function(p) {
+      a <- ann_cor(wv_ann[[p[1]]], wv_ann[[p[2]]], wv_ann$year)
+      tibble(season = "Nov-Feb (winter after year class)", x = p[1], y = p[2], n = a[["n"]], r = a[["r"]], r_detrended = a[["r_detrended"]],
+             trend_x_per_decade = trend_of(wv_ann[[p[1]]], wv_ann$year)[["trend_per_decade"]],
+             trend_x_p = trend_of(wv_ann[[p[1]]], wv_ann$year)[["trend_p"]],
+             trend_y_per_decade = trend_of(wv_ann[[p[2]]], wv_ann$year)[["trend_per_decade"]],
+             trend_y_p = trend_of(wv_ann[[p[2]]], wv_ann$year)[["trend_p"]]) }))
+  series_mean <- function(nm) { a <- if (nm %in% names(w_ann)) w_ann[[nm]] else wv_ann[[nm]]; mean(a, na.rm = TRUE) }
+  wind_tab <- wind_tab %>% rowwise() %>%
+    mutate(mean_x = series_mean(x), mean_y = series_mean(y),
+           # share of the mean per decade; not meaningful for anomaly series (SST), left NA there
+           trend_x_share_of_mean = ifelse(grepl("anomaly", x), NA_real_, trend_x_per_decade / mean_x),
+           trend_y_share_of_mean = ifelse(grepl("anomaly", y), NA_real_, trend_y_per_decade / mean_y)) %>% ungroup()
+  write_tab(wind_tab, "env_wind_vs_upwelling")
+  p_wind <- w_ann %>% select(year, `wind stress, alongshore (NDBC)`, `CUTI 47N, cached`, `BEUTI 47N, cached`,
+                             any_of("BEUTI 47N, current")) %>%
+    pivot_longer(-year) %>% filter(!is.na(value)) %>% group_by(name) %>% mutate(z = zs(value)) %>% ungroup() %>%
+    ggplot(aes(year, z, colour = name)) + geom_hline(yintercept = 0, colour = "grey70") +
+    geom_line() + geom_point(size = 1) +
+    scale_colour_manual(values = c("#D55E00", "#E69F00", "black", "#0072B2"), name = NULL) +
+    labs(x = NULL, y = "May-Aug mean (z-score)",
+         title = "Buoy-measured alongshore wind stress against the model-derived upwelling indices",
+         subtitle = "Measured winds carry CUTI's interannual signal; whether they carry BEUTI's trend tests its homogeneity (env_wind_vs_upwelling.csv).") +
+    theme_ms(9) + guides(colour = guide_legend(nrow = 2))
+  save_fig(p_wind, "fig_wind_vs_upwelling", 9, 5)
+  message("09 (H): wind stress vs CUTI 47N (cached) May-Aug r = ",
+          round(wind_tab$r[wind_tab$x == "wind stress, alongshore (NDBC)" & wind_tab$y == "CUTI 47N, cached"], 3))
+} else message("09 (H): skipped (run acquire/fetch_ndbc_met.R)")
+
+if ("columbia_lower_q_beaver_cms" %in% names(env)) {
+  q_ann <- env %>% filter(month %in% 4:6, year %in% 1992:2024) %>% group_by(year) %>%
+    summarise(dalles_cached = mean(q_cms), dalles = mean(columbia_lower_q_dalles_cms),
+              beaver = mean(columbia_lower_q_beaver_cms), willamette = mean(columbia_lower_q_willamette_cms), .groups = "drop")
+  gauge_tab <- tibble(
+    comparison = c("Beaver (lowest main-stem gauge) vs The Dalles, Apr-Jun", "Beaver vs The Dalles + Willamette, Apr-Jun",
+                   "Willamette vs The Dalles, Apr-Jun", "The Dalles: fresh download vs cached file, Apr-Jun"),
+    n_years = c(sum(!is.na(q_ann$beaver)), sum(!is.na(q_ann$beaver)), nrow(q_ann), nrow(q_ann)),
+    r = c(cor(q_ann$beaver, q_ann$dalles, use = "complete.obs"), cor(q_ann$beaver, q_ann$dalles + q_ann$willamette, use = "complete.obs"),
+          cor(q_ann$willamette, q_ann$dalles), cor(q_ann$dalles, q_ann$dalles_cached)),
+    r_detrended = c(ann_cor(q_ann$beaver, q_ann$dalles, q_ann$year)[["r_detrended"]],
+                    ann_cor(q_ann$beaver, q_ann$dalles + q_ann$willamette, q_ann$year)[["r_detrended"]],
+                    ann_cor(q_ann$willamette, q_ann$dalles, q_ann$year)[["r_detrended"]],
+                    ann_cor(q_ann$dalles, q_ann$dalles_cached, q_ann$year)[["r_detrended"]]),
+    mean_ratio = c(mean(q_ann$beaver / q_ann$dalles, na.rm = TRUE), mean(q_ann$beaver / (q_ann$dalles + q_ann$willamette), na.rm = TRUE),
+                   mean(q_ann$willamette / q_ann$dalles), mean(q_ann$dalles / q_ann$dalles_cached)))
+  write_tab(gauge_tab, "env_discharge_gauges")
+  message("09 (H): Beaver vs The Dalles Apr-Jun r = ", round(gauge_tab$r[1], 3))
+}
 
 message("09_env_record_diagnostics: done (open-coast fit ", fit_open$iterations, " iterations; all-station fit ",
         fit_all$iterations, " iterations, converged = ", fit_all$converged, ")")
