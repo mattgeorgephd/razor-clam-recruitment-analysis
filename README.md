@@ -14,9 +14,9 @@ Read [`docs/methodology-review.md`](docs/methodology-review.md) §1 for the key 
 
 ```bash
 # from the repository root (R >= 4.3; packages listed in AGENTS.md)
-./run_pipeline.sh                # ~4 min; rebuilds 02_data/derived/ and 03_analyses/robust-reanalysis/,
+./run_pipeline.sh                # ~1.5 min; rebuilds 02_data/derived/ and 03_analyses/robust-reanalysis/,
                                  # then compiles every figure and table into 03_analyses/robust-reanalysis/report.md (+ .html)
-./run_pipeline.sh --fast         # ~1.5 min with 200 surrogates, into the git-ignored robust-reanalysis-fast/
+./run_pipeline.sh --fast         # ~1 min with 200 surrogates, into the git-ignored robust-reanalysis-fast/
 ./run_pipeline.sh --list         # steps; --help for all flags (--steps, --from, --out, --notebook, --install)
 # Windows: Rscript 01_code/R/run_all.R [flags]
 ```

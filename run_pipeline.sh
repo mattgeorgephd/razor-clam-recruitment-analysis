@@ -2,8 +2,8 @@
 # Batch runner for the robust re-analysis pipeline (thin wrapper around
 # 01_code/R/run_all.R; all flags are passed through).
 #
-#   ./run_pipeline.sh                full run, ~4 min  -> 03_analyses/robust-reanalysis/
-#   ./run_pipeline.sh --fast         ~1.5 min, 200 surrogates -> 03_analyses/robust-reanalysis-fast/
+#   ./run_pipeline.sh                full run, ~1.5 min  -> 03_analyses/robust-reanalysis/
+#   ./run_pipeline.sh --fast         ~1 min, 200 surrogates -> 03_analyses/robust-reanalysis-fast/
 #   ./run_pipeline.sh --steps=04,10  rerun the confirmatory models and the report only
 #   ./run_pipeline.sh --notebook     also run the legacy notebook afterwards (~15 min)
 #   ./run_pipeline.sh --list         list steps;  --help for all options

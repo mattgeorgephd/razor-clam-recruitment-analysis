@@ -7,8 +7,8 @@
 # <out>/report.md (and report.html when pandoc is available).
 #
 # Usage, from the repository root (./run_pipeline.sh accepts the same flags):
-#   Rscript 01_code/R/run_all.R                full run (~4 min) -> 03_analyses/robust-reanalysis/
-#   Rscript 01_code/R/run_all.R --fast         200 surrogates instead of 2000 (~1.5 min);
+#   Rscript 01_code/R/run_all.R                full run (~1.5 min) -> 03_analyses/robust-reanalysis/
+#   Rscript 01_code/R/run_all.R --fast         200 surrogates instead of 2000 (~1 min);
 #                                              writes to 03_analyses/robust-reanalysis-fast/ (git-ignored)
 #   Rscript 01_code/R/run_all.R --steps=04,10  only these steps, in this order
 #   Rscript 01_code/R/run_all.R --from=05      this step and every later one

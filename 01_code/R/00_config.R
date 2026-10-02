@@ -68,7 +68,7 @@ SST_MIN_STATION_MONTHS <- 24  # stations with shorter records cannot get a clima
 
 SEED <- 20261002
 # Surrogate series for permutation / null calibration. run_all.R --fast sets
-# RC_N_SURROGATES=200 (about 1 min instead of 3); p-values are then coarser.
+# RC_N_SURROGATES=200 (about 1 min instead of 1.5); p-values are then coarser.
 N_SURROGATES <- as.integer(Sys.getenv("RC_N_SURROGATES", unset = "2000"))
 
 # ── Plot theme ───────────────────────────────────────────────────────────────

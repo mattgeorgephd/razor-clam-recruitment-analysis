@@ -12,7 +12,7 @@ This document is written for the analyst and for co-authors deciding what a manu
 2. **Re-ran the original notebook end to end in a clean R 4.3.3 environment.** The only edit was removing two unused packages. The rerun reproduced the committed correlation workbook exactly: maximum |Δr| = 0 over 1,350 rows.
 3. **Independently re-implemented the monthly screening grid** (`01_code/R/lib_original_grid.R`). It reproduces the committed `correlation_matrix_monthly.xlsx` to |Δr| < 0.001 over 900 cells (`tables/null_audit_reproduction_check.csv`). That re-implementation exposed bug B3 below.
 4. **Inspected the raw data directly.** This covered 218,101 shell lengths with survey dates, 140 beach-year abundance estimates, 17 temperature stations, and the upwelling, discharge and PDO series.
-5. **Built a confirmatory re-analysis** (`01_code/R/`, run with `Rscript 01_code/R/run_all.R`, about 3 minutes). It tests the original findings against explicit null models and fits a small set of pre-specified, cohort-aligned hypotheses.
+5. **Built a confirmatory re-analysis** (`01_code/R/`, run with `Rscript 01_code/R/run_all.R`, about 1.5 minutes). It tests the original findings against explicit null models and fits a small set of pre-specified, cohort-aligned hypotheses.
 
 Literature citations are given with a verification status, because this environment could not reach publisher pages. **[V]** means verified against the document itself, for example the 1988 WDF report in this repository with page numbers. **[A]** means verified from an abstract or index record only. **[C]** means cited from domain knowledge and still to be checked before submission.
 

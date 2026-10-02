@@ -140,7 +140,7 @@ All analyses used log abundance. Pre-recruit and recruit abundance were never ze
   4. for recruits, a stock carry-over model, log recruits(t) ~ log pre-recruits(t−1) + log recruits(t−1), with no environmental data.
 - *Models compared, year-class framework:* trend only, BEUTI only, and trend + BEUTI.
 
-**Software.** Analyses used R 4.3.3 (R Core Team 2024 **[C]**) with tidyverse, nlme (Pinheiro & Bates **[C]**) and lme4. Code and derived data are in the accompanying repository (`01_code/R/`, `02_data/derived/`); the full pipeline runs in about 3 minutes, and random seeds are fixed.
+**Software.** Analyses used R 4.3.3 (R Core Team 2024 **[C]**) with tidyverse, nlme (Pinheiro & Bates **[C]**) and lme4. Code and derived data are in the accompanying repository (`01_code/R/`, `02_data/derived/`); the full pipeline runs in about 1.5 minutes, and random seeds are fixed.
 
 ## 3. Results
 

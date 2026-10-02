@@ -13,14 +13,14 @@ This repository analyzes Washington coast Pacific razor clam (*Siliqua patula*) 
 
 | Path | Status | Use it for |
 |---|---|---|
-| `01_code/R/` (`run_all.R` → scripts `01`–`10`) | **Primary.** Reproducible, ~4 min, deterministic (seed in `00_config.R`) | Anything that goes into the manuscript |
+| `01_code/R/` (`run_all.R` → scripts `01`–`10`) | **Primary.** Reproducible, ~1.5 min, deterministic (seed in `00_config.R`) | Anything that goes into the manuscript |
 | `01_code/R/acquire/` | Fetch scripts for external products (satellite SST, buoy winds/waves, lower-river discharge). Written without network access; **not yet run** | Extending the environmental record (see `docs/environmental-record-options.md`) |
 | `01_code/razor-clam-recruitment-analysis.Rmd` | Legacy exploratory notebook (8,400 lines). Bug-fixed 2026-10 but methodologically superseded | Reproducing or explaining earlier figures |
 | `01_code/archive/*.Rmd` | Frozen earlier versions (2–6) of the notebook | Nothing; history only |
 
 ## Running
 
-- **Full pipeline:** from the repo root, `./run_pipeline.sh` (or `Rscript 01_code/R/run_all.R`; same flags). It rebuilds `02_data/derived/` and `03_analyses/robust-reanalysis/`, appends to `run_log.txt`, and compiles every figure and table into `03_analyses/robust-reanalysis/report.md` (+ `report.html` when pandoc is found). Flags: `--fast` (200 surrogates, ~1.5 min, writes to the git-ignored `robust-reanalysis-fast/`), `--steps=04,10`, `--from=05`, `--out=DIR`, `--no-report`, `--notebook`, `--install`, `--list`.
+- **Full pipeline:** from the repo root, `./run_pipeline.sh` (or `Rscript 01_code/R/run_all.R`; same flags). It rebuilds `02_data/derived/` and `03_analyses/robust-reanalysis/`, appends to `run_log.txt`, and compiles every figure and table into `03_analyses/robust-reanalysis/report.md` (+ `report.html` when pandoc is found). Flags: `--fast` (200 surrogates, ~1 min, writes to the git-ignored `robust-reanalysis-fast/`), `--steps=04,10`, `--from=05`, `--out=DIR`, `--no-report`, `--notebook`, `--install`, `--list`.
 - **Single script:** scripts can be run individually (`Rscript 01_code/R/04_confirmatory_models.R`) once `01_build_datasets.R` has run; or `./run_pipeline.sh --steps=04,10` to refresh the report too.
 - **Before committing results:** run the full (non-fast) pipeline so the committed tables and figures reflect 2,000 surrogates.
 - **Notebook:** knit from RStudio (project root), or `Rscript -e 'knitr::purl("01_code/razor-clam-recruitment-analysis.Rmd")'` and run the resulting `.R` from the repo root. It writes to `03_analyses/<YYYYMMDD>-recruitment-analysis/`. Run it in a scratch copy unless you intend to commit new outputs; one run writes ~150 PNGs, some at 1000 dpi.
