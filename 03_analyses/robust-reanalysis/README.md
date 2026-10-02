@@ -1,6 +1,6 @@
 # 03_analyses/robust-reanalysis
 
-Outputs of `Rscript 01_code/R/run_all.R`. Do not edit by hand; rerun the pipeline instead. `sessionInfo.txt` records the R and package versions of the last run.
+Outputs of `./run_pipeline.sh` (`01_code/R/run_all.R`). Do not edit by hand; rerun the pipeline instead. **Start with `report.md`**, which collects the key results, every figure and every table (the `report.html` twin, with images embedded, is regenerated locally and not committed). `run_info.txt` and `sessionInfo.txt` record the last run; `run_log.txt` (not committed) accumulates run history.
 
 ## Figures (`figures/`, PNG, 300 dpi)
 
@@ -17,6 +17,10 @@ Outputs of `Rscript 01_code/R/run_all.R`. Do not edit by hand; rerun the pipelin
 | `fig_beach_heterogeneity.png` | 04 | Beach-specific GLS-AR(1) effects |
 | `fig_window_scan_pre.png`, `fig_window_scan_rec.png` | 05 | Exploratory window scan; outlined cells would pass family-wise control (none do) |
 | `fig_forecast_skill.png` | 06 | Out-of-sample skill: leaky vs honest selection, persistence, carry-over |
+| `fig_env_coverage.png` | 09 | Month-by-month coverage of every environmental source |
+| `fig_legacy_idw_vs_homogenized.png` | 09 | Legacy station-blended beach temperature vs the homogenised regional anomaly |
+| `fig_sst_homogenization.png` | 09 | Regional SST anomaly under four constructions, with +/- 2 SE |
+| `fig_beuti_homogeneity.png` | 09 | May-Aug BEUTI, CUTI and their ratio at 46N/47N with the 2010/2011 product boundary |
 
 ## Tables (`tables/`, CSV)
 
@@ -45,5 +49,10 @@ Outputs of `Rscript 01_code/R/run_all.R`. Do not edit by hand; rerun the pipelin
 | `forecast_skill_cohort_framework.csv` | 06 | Skill of trend, BEUTI and trend+BEUTI models for year-class pre-recruits |
 | `forecast_2025_archived.csv` | 08 | **Archived** forecasts for survey 2025, made 2026-10-02 before the 2025 estimates were added. Do not regenerate; score against WDFW estimates (task T15) |
 | `forecast_skill_fallback_counts.csv` | 06 | Forecasts that fell back to climatology because a predictor was missing |
+| `env_coverage_by_station.csv`, `env_coverage_by_year.csv` | 09 | Station classes, distances, record lengths; months per year per source |
+| `env_legacy_idw_station_eras.csv` | 09 | Mean offset of the legacy blended series from the homogenised anomaly by beach and dominant station |
+| `env_sst_variants.csv`, `env_sst_variant_effects.csv` | 09 | Agreement among SST constructions and the SST effect under each |
+| `env_sst_station_parameters.csv` | 09 | Station gains, error SDs, leave-one-station-out agreement |
+| `env_beuti_step_tests.csv`, `env_beuti_latitude_periods.csv`, `env_index_annual_correlations.csv` | 09 | BEUTI/CUTI trend, 2011 step and breakpoint tests; latitude x period means; cross-index correlations |
 
 Seeds are fixed (`SEED` in `01_code/R/00_config.R`), so surrogate-based p-values are reproducible to Monte Carlo precision (2,000 draws; ±0.01 near p = 0.05).

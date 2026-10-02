@@ -110,19 +110,46 @@ pdo <- read_csv(file.path(ENV_DIR, "pdo_index.csv"), show_col_types = FALSE) %>%
   filter(!is.na(month)) %>%
   select(year, month, pdo)
 
-# Regional SST anomaly from open-coast buoys (station-specific climatology removed
-# before averaging, so changes in which buoys report do not create steps).
+# Regional SST anomaly from open-coast buoys and moorings, homogenised with the
+# two-way station model in lib_env_homogenize.R (station climatology + common
+# regional anomaly, estimated jointly so that stations with short or partial
+# records do not bias the series; see docs/environmental-record-options.md).
+# Estuary/harbor gauges are excluded (STATION_CLASS in 00_config.R).
+source(here::here("01_code", "R", "lib_env_homogenize.R"))
 sst_station <- read_excel(file.path(ENV_DIR, "monthly_wtmp_summary.xlsx"), sheet = "data") %>%
   mutate(year = as.integer(year), month = as.integer(month)) %>%
-  filter(station %in% SST_STATIONS, n_obs >= SST_MIN_HOURLY_OBS) %>%
-  group_by(station, month) %>%
-  mutate(clim = mean(wtmp_mean[year %in% SST_CLIM_YEARS], na.rm = TRUE),
-         anom = wtmp_mean - clim) %>%
-  ungroup()
+  filter(n_obs >= SST_MIN_HOURLY_OBS) %>%
+  transmute(station, year, month, value = wtmp_mean)
 
-sst <- sst_station %>%
+sst_fit <- homogenize_stations(sst_station, SST_CLIM_YEARS, stations = SST_OPEN_COAST,
+                               min_station_months = SST_MIN_STATION_MONTHS)
+if (!sst_fit$converged) warning("SST homogenisation did not converge; check lib_env_homogenize.R")
+sst <- sst_fit$regional %>%
+  transmute(year, month, sst_anom = anom, sst_anom_se = se, n_sst_stations = n_stations)
+write_csv(sst_fit$station, file.path(DERIVED, "sst_station_parameters.csv"))
+
+# The earlier construction (naive anomalies from three buoys, each relative to
+# its own climatology) is kept as a comparison column for 09_env_record_diagnostics.R.
+sst_naive <- sst_station %>%
+  filter(station %in% SST_STATIONS) %>%
+  group_by(station, month) %>%
+  mutate(anom = value - mean(value[year %in% SST_CLIM_YEARS], na.rm = TRUE)) %>%
+  ungroup() %>%
   group_by(year, month) %>%
-  summarise(sst_anom = mean(anom, na.rm = TRUE), n_sst_stations = n(), .groups = "drop")
+  summarise(sst_anom_naive3 = mean(anom, na.rm = TRUE), .groups = "drop")
+
+# Optional external products (satellite SST, buoy wind and waves, a lower-river
+# gauge): any 02_data/Environmental Data/external/*_monthly.csv with `year` and
+# `month` columns is joined as extra columns prefixed by its file stem. Nothing
+# downstream requires them; see 01_code/R/acquire/README.md.
+ext_files <- list.files(file.path(ENV_DIR, "external"), pattern = "_monthly\\.csv$", full.names = TRUE)
+ext <- map(ext_files, function(f) {
+  d <- read_csv(f, show_col_types = FALSE)
+  if (!all(c("year", "month") %in% names(d))) return(NULL)
+  stem <- sub("_monthly\\.csv$", "", basename(f))
+  d %>% mutate(year = as.integer(year), month = as.integer(month)) %>%
+    rename_with(~ paste0(stem, "_", .x), -c(year, month))
+}) %>% compact()
 
 env_monthly <- expand_grid(year = 1988:2026, month = 1:12) %>%
   left_join(beuti, by = c("year", "month")) %>%
@@ -130,7 +157,9 @@ env_monthly <- expand_grid(year = 1988:2026, month = 1:12) %>%
   left_join(discharge, by = c("year", "month")) %>%
   left_join(pdo, by = c("year", "month")) %>%
   left_join(sst, by = c("year", "month")) %>%
+  left_join(sst_naive, by = c("year", "month")) %>%
   mutate(n_sst_stations = replace_na(n_sst_stations, 0L))
+for (e in ext) env_monthly <- env_monthly %>% left_join(e, by = c("year", "month"))
 
 write_csv(env_monthly, file.path(DERIVED, "env_monthly.csv"))
 

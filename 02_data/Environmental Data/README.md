@@ -34,7 +34,11 @@ Several other stations are **inside estuaries or harbors** and do not represent 
 - HMDO3 Hammond (Columbia estuary)
 - DMNO3 Desdemona Sands
 
-The legacy notebook blends raw temperatures from whichever stations report, so its beach temperature series contain station-switch artifacts (`docs/methodology-review.md` §2.4). The new pipeline uses only the three open-coast buoys and averages anomalies (`02_data/derived/env_monthly.csv`, column `sst_anom`).
+The legacy notebook blends raw temperatures from whichever stations report, so its beach temperature series contain station-switch artifacts of up to 0.9 °C (`docs/environmental-record-options.md` §1.2). The pipeline instead fits a two-way station model to the open-coast stations and uses its regional anomaly (`02_data/derived/env_monthly.csv`, columns `sst_anom`, `sst_anom_se`). Station classes are defined in `01_code/R/00_config.R` (`STATION_CLASS`).
+
+## `external/` (not yet populated)
+
+Monthly tables from external products fetched by `01_code/R/acquire/` (satellite SST, buoy winds and waves, lower-Columbia gauges). Any `external/*_monthly.csv` with `year` and `month` columns is joined into `env_monthly.csv` automatically. Keep the `*_provenance.txt` files alongside.
 
 ## Caveats
 

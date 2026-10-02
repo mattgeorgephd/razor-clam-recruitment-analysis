@@ -4,7 +4,7 @@ All analysis code. Run everything from the **repository root** (the folder with 
 
 ## `R/`: robust re-analysis pipeline (primary)
 
-`Rscript 01_code/R/run_all.R` runs the scripts in order (~3 min). Outputs go to `02_data/derived/` and `03_analyses/robust-reanalysis/`.
+`./run_pipeline.sh` (or `Rscript 01_code/R/run_all.R`) runs the scripts in order (~4 min), logs timing to `run_log.txt`, and compiles the report. Outputs go to `02_data/derived/` and `03_analyses/robust-reanalysis/`. Flags: `--fast`, `--steps=..`, `--from=..`, `--out=DIR`, `--no-report`, `--notebook`, `--install`, `--list`, `--help`.
 
 | Script | Purpose | Main outputs |
 |---|---|---|
@@ -18,11 +18,15 @@ All analysis code. Run everything from the **repository root** (the folder with 
 | `06_forecast_skill.R` | Rolling-origin forecasts. Compares climatology, persistence, stock carry-over, leaky vs honest predictor selection, and the pre-specified BEUTI model | `fig_forecast_skill`; `forecast_skill_*` |
 | `07_figures_overview.R` | Study-area map, abundance and predictor time series | `fig_study_area`, `fig_abundance_timeseries`, `fig_predictor_timeseries` |
 | `08_forecast_2025.R` | Archives forecasts for the 2025 survey (pre-recruits of year class 2024; carry-over recruits) made before 2025 estimates enter the repo. Never overwrites an existing archive | `forecast_2025_archived` |
-| `run_all.R` | Runs `01`–`08`; writes `sessionInfo.txt` | none |
+| `lib_env_homogenize.R` | Two-way station model (climatology + regional anomaly + gain, ALS, precision weights) used by `01` and `09`. Shared helper | none |
+| `09_env_record_diagnostics.R` | Coverage of every environmental source; legacy IDW blend vs homogenised anomaly (station-era offsets); alternative SST constructions and their effect on the SST test; station parameters with leave-one-out checks; BEUTI/CUTI trend, 2011 step and breakpoint tests; cross-index correlations | `fig_env_coverage`, `fig_legacy_idw_vs_homogenized`, `fig_sst_homogenization`, `fig_beuti_homogeneity`; `env_*` |
+| `10_report.R` | Compiles key results, all figures and all tables into `report.md`, and `report.html` when pandoc is available (PATH, or RStudio's copy via rmarkdown) | `report.md`, `report.html` |
+| `run_all.R` | Batch runner: argument parsing, dependency check, fresh environment per step, logging (`run_log.txt`, `run_info.txt`, `sessionInfo.txt`), optional legacy-notebook run | none |
+| `acquire/` | Fetch scripts for external products (OISST, MUR, NDBC winds/waves, lower-Columbia gauges), written without network access and not yet executed; see `acquire/README.md` | `02_data/Environmental Data/external/` |
 
 Figures are in `03_analyses/robust-reanalysis/figures/` (PNG, 300 dpi); tables are in `.../tables/` (CSV).
 
-**Packages:** tidyverse, readxl, lubridate, nlme, lme4, here, maps, mapdata.
+**Packages:** tidyverse, readxl, lubridate, nlme, lme4, here, maps, mapdata (checked by `run_all.R`; `--install` installs missing ones). Optional: pandoc for `report.html`; knitr, openxlsx, scales, corrplot, patchwork, sf, jsonlite for `--notebook`.
 
 ## `razor-clam-recruitment-analysis.Rmd`: legacy exploratory notebook
 

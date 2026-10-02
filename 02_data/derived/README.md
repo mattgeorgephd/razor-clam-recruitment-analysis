@@ -28,8 +28,15 @@ One row per year × month, 1988–2026.
 | `beuti_46N`, `beuti_47N`, `cuti_46N`, `cuti_47N` | Monthly means of daily indices (requires ≥20 days) |
 | `q_cms` | Columbia River discharge at The Dalles, monthly mean (m³ s⁻¹) |
 | `pdo` | PDO index |
-| `sst_anom` | Regional SST anomaly (°C): mean of monthly anomalies at open-coast buoys 46029, 46041 and 46211, each relative to its own 1991–2024 monthly climatology (months need ≥240 hourly obs) |
-| `n_sst_stations` | Number of buoys contributing to `sst_anom` |
+| `sst_anom` | Regional SST anomaly (°C) from the two-way station homogenisation (`01_code/R/lib_env_homogenize.R`) of the open-coast stations 46029, 46041, 46211, 46099, 46100 and 46248 (months need ≥240 hourly obs; climatology 1991–2024) |
+| `sst_anom_se` | Standard error of `sst_anom` (0.15–0.4 °C depending on how many stations report) |
+| `n_sst_stations` | Number of stations contributing to `sst_anom` |
+| `sst_anom_naive3` | The earlier construction (mean of naive anomalies at 46029, 46041, 46211), kept for comparison only |
+| `<stem>_*` | Any external product found in `02_data/Environmental Data/external/<stem>_monthly.csv` (none committed yet) |
+
+## `sst_station_parameters.csv`
+
+One row per station in the homogenised SST series: record length, gain (fixed at 1 in the pipeline fit) and error SD used as the precision weight.
 
 ## `cohort_table.csv`
 

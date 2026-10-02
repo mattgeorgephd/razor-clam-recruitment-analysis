@@ -28,7 +28,12 @@ ROOT      <- find_root()
 DATA_DIR  <- file.path(ROOT, "02_data")
 ENV_DIR   <- file.path(DATA_DIR, "Environmental Data")
 DERIVED   <- file.path(DATA_DIR, "derived")
-OUT_DIR   <- file.path(ROOT, "03_analyses", "robust-reanalysis")   # fixed name: reruns overwrite
+# Output folder: fixed name so reruns overwrite. run_all.R --out=DIR (or the
+# RC_OUT_DIR environment variable) redirects everything, e.g. for a --fast run.
+OUT_DIR   <- Sys.getenv("RC_OUT_DIR", unset = "")
+OUT_DIR   <- if (nzchar(OUT_DIR)) {
+  if (grepl("^(/|[A-Za-z]:)", OUT_DIR)) OUT_DIR else file.path(ROOT, OUT_DIR)
+} else file.path(ROOT, "03_analyses", "robust-reanalysis")
 FIG_DIR   <- file.path(OUT_DIR, "figures")
 TAB_DIR   <- file.path(OUT_DIR, "tables")
 for (d in c(DERIVED, OUT_DIR, FIG_DIR, TAB_DIR)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
@@ -47,8 +52,24 @@ SST_STATIONS <- c("46029", "46041", "46211")
 SST_MIN_HOURLY_OBS <- 240    # ≈10 days of hourly data for a valid monthly mean
 SST_CLIM_YEARS <- 1991:2024  # climatology baseline for station anomalies
 
+# Station classes for the water-temperature record (02_data/Environmental Data).
+# Only open-coast stations enter the regional SST anomaly; the others are kept
+# for diagnostics (10_env_record_diagnostics.R). 46087 (Neah Bay offshore,
+# 48.5N) sits in the Juan de Fuca eddy and is excluded from the regional index.
+STATION_CLASS <- c(
+  `46010` = "open coast", `46029` = "open coast", `46041` = "open coast",
+  `46087` = "open coast", `46099` = "open coast", `46100` = "open coast",
+  `46119` = "open coast", `46211` = "open coast", `46248` = "open coast",
+  `46096` = "river mouth", `46127` = "river mouth", `46243` = "river mouth",
+  HMDO3 = "estuary/harbor", LAPW1 = "estuary/harbor", NEAW1 = "estuary/harbor",
+  TOKW1 = "estuary/harbor", WPTW1 = "estuary/harbor")
+SST_OPEN_COAST <- c("46029", "46041", "46211", "46099", "46100", "46248", "46119", "46010")
+SST_MIN_STATION_MONTHS <- 24  # stations with shorter records cannot get a climatology
+
 SEED <- 20261002
-N_SURROGATES <- 2000         # surrogate series for permutation / null calibration
+# Surrogate series for permutation / null calibration. run_all.R --fast sets
+# RC_N_SURROGATES=200 (about 1 min instead of 3); p-values are then coarser.
+N_SURROGATES <- as.integer(Sys.getenv("RC_N_SURROGATES", unset = "2000"))
 
 # ── Plot theme ───────────────────────────────────────────────────────────────
 theme_ms <- function(base_size = 11) {

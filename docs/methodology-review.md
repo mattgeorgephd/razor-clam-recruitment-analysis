@@ -105,7 +105,7 @@ The defensible manuscript is therefore a careful **negative-and-cautionary** pap
 
 Three problems follow:
 
-1. **Inhomogeneity.** Averaging raw temperatures from stations with different climatologies creates steps whenever the mix changes. The fix is to average *anomalies* relative to each station's own climatology, which `01_build_datasets.R` does for three open-coast buoys.
+1. **Inhomogeneity.** Averaging raw temperatures from stations with different climatologies creates steps whenever the mix changes; the era offsets are quantified in `docs/environmental-record-options.md` §1.2 (up to 0.9 deg C). The fix in `01_build_datasets.R` is a two-way station model (station climatology + common regional anomaly, `lib_env_homogenize.R`) fitted to six open-coast stations, which also avoids the bias that naive anomalies carry when a station's record is short.
 2. **Representativeness.** Estuary and marina gauges measure bay water, not the surf zone where razor clams live and settle.
 3. **Extremes.** "Min" and "max" are monthly extremes of hourly data, which are dominated by tides and single events.
 
@@ -214,7 +214,7 @@ All code is in `01_code/R/` (see `01_code/README.md`). Outputs are in `03_analys
   - BEUTI and CUTI at 46°N and 47°N, as monthly means from daily values (≥20 days).
   - Columbia discharge.
   - PDO, with month names parsed.
-  - A **homogeneous regional SST anomaly**: the mean of station anomalies from open-coast buoys 46029, 46041 and 46211, each relative to its own 1991–2024 monthly climatology; months need ≥240 hourly observations.
+  - A **homogeneous regional SST anomaly** with a standard error: the regional term of a two-way station model (`lib_env_homogenize.R`) fitted to the open-coast stations 46029, 46041, 46211, 46099, 46100 and 46248 (months need ≥240 hourly observations; climatology 1991–2024). Alternative constructions agree at r ≥ 0.98 and leave the SST result unchanged (`docs/environmental-record-options.md` §2).
 - `cohort_table.csv`: one row per beach × year class Y, holding pre-recruits at Y+1, recruits at Y+2, spawners (recruits at Y), survey dates and five pre-specified predictors.
 
 ### 5.2 Pre-specified hypotheses
@@ -247,7 +247,7 @@ These were fixed in code (`01_build_datasets.R` §4) before any clam–environme
 | Predictor | Pooled LMM, all beaches | Pooled LMM, no Kalaloch | Coastwide GLS-AR(1) |
 |---|---|---|---|
 | BEUTI May–Aug | −0.34 (−0.66, −0.01), p = 0.052, Holm 0.47 | −0.49 (−0.79, −0.18), p = 0.003, **Holm 0.031** | −0.58 ± 0.16 SD, p = 0.001, **Holm 0.013** |
-| SST anomaly May–Sep | +0.05, p = 0.69 | +0.09, p = 0.48 | +0.07, p = 0.59 |
+| SST anomaly May–Sep | +0.05, p = 0.71 | +0.08, p = 0.55 | +0.07, p = 0.63 |
 | PDO May–Sep | −0.03, p = 0.83 | −0.11, p = 0.45 | −0.08, p = 0.58 |
 | Discharge Apr–Jun | −0.05, p = 0.71 | −0.10, p = 0.46 | −0.06, p = 0.65 |
 | CUTI Nov–Feb | +0.10, p = 0.47 | −0.02, p = 0.86 | +0.12, p = 0.51 |
@@ -280,8 +280,8 @@ The same-sign but weaker CUTI result (first differences p = 0.03, levels p = 0.3
 2. **Replace screening with pre-specified hypotheses** (done in `04_confirmatory_models.R`). Report any exploratory search with family-wise calibration (done in `05_window_scan.R`).
 3. **Detrend or model trends explicitly, and handle autocorrelation** (GLS-AR(1), random year effects).
 4. **Report honest out-of-sample skill** (`06_forecast_skill.R`), with climatology and persistence baselines.
-5. **Replace the station-blended temperature** with a homogeneous product: satellite SST at beach-adjacent pixels, or at minimum buoy anomalies (done).
-6. **Verify BEUTI homogeneity.** Contact the index authors or check documentation for splices or reanalysis changes. Repeat key results with CUTI and with detrended BEUTI.
+5. **Replace the station-blended temperature** with a homogeneous product: done for buoy anomalies (two-way station model); satellite SST at beach-adjacent pixels and buoy wind/wave records are the next step, with fetch scripts ready in `01_code/R/acquire/` (`docs/environmental-record-options.md`).
+6. **Verify BEUTI homogeneity.** Diagnostics find no level shift at the 2010/2011 product boundary and a detrended correlation of −0.48 with independent buoy SST, but the trend is not matched by the SST trend; contact the index authors (`docs/environmental-record-options.md` §1.3). Key results already use detrended BEUTI and CUTI.
 7. **Resolve the growth-model citation (Cheng & Kuk 2002) or drop age labels.** Call the classes size classes.
 8. **Obtain the variance of each WDFW abundance estimate** and propagate it, either as weights or in a state-space model.
 

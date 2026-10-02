@@ -14,8 +14,14 @@ Read [`docs/methodology-review.md`](docs/methodology-review.md) §1 for the key 
 
 ```bash
 # from the repository root (R >= 4.3; packages listed in AGENTS.md)
-Rscript 01_code/R/run_all.R      # ~3 min; rebuilds 02_data/derived/ and 03_analyses/robust-reanalysis/
+./run_pipeline.sh                # ~4 min; rebuilds 02_data/derived/ and 03_analyses/robust-reanalysis/,
+                                 # then compiles every figure and table into 03_analyses/robust-reanalysis/report.md (+ .html)
+./run_pipeline.sh --fast         # ~1.5 min with 200 surrogates, into the git-ignored robust-reanalysis-fast/
+./run_pipeline.sh --list         # steps; --help for all flags (--steps, --from, --out, --notebook, --install)
+# Windows: Rscript 01_code/R/run_all.R [flags]
 ```
+
+Open `03_analyses/robust-reanalysis/report.md` (or `report.html`) for all results in one place.
 
 The legacy notebook `01_code/razor-clam-recruitment-analysis.Rmd` can still be knitted from RStudio with this project open.
 
@@ -23,10 +29,11 @@ The legacy notebook `01_code/razor-clam-recruitment-analysis.Rmd` can still be k
 
 | Path | Contents |
 |---|---|
-| `01_code/` | Analysis code. `R/` holds the robust re-analysis pipeline (primary); `razor-clam-recruitment-analysis.Rmd` is the legacy exploratory notebook; `archive/` holds earlier notebook versions |
+| `01_code/` | Analysis code. `R/` holds the robust re-analysis pipeline (primary) and `R/acquire/` the fetch scripts for external environmental products; `razor-clam-recruitment-analysis.Rmd` is the legacy exploratory notebook; `archive/` holds earlier notebook versions |
+| `run_pipeline.sh` | Batch runner (wrapper around `01_code/R/run_all.R`) |
 | `02_data/` | Raw inputs (abundance estimates, shell lengths, environmental series) and `derived/` analysis-ready tables |
 | `03_analyses/` | Outputs. `robust-reanalysis/` (current) and `20260322-recruitment-analysis/` (legacy notebook run, superseded) |
-| `docs/` | `methodology-review.md`: full review of methods, data and results, with recommendations |
+| `docs/` | `methodology-review.md`: full review of methods, data and results, with recommendations. `environmental-record-options.md`: diagnosis of the patchwork environmental record and evaluated options for a homogeneous one |
 | `manuscript/` | Draft manuscript and its figure and table sources |
 | `WDF Razor Clam Hatchery.1988.pdf` | Creekman, Huff & Andrews (1988) *The Razor Clam Hatchery 1980–1987*, WDF Tech. Rep. 1. Background biology (spawning season, larval duration, juvenile washout) |
 | `task.md` | Prioritized list of outstanding issues and the fixes already made |
@@ -39,5 +46,6 @@ The legacy notebook `01_code/razor-clam-recruitment-analysis.Rmd` can still be k
 - **The original screen.** The original analysis computed about 7,000 correlations; its monthly screen is not distinguishable from an autocorrelation-preserving null (global p = 0.07; 4/900 cells pass FDR). Its apparent forecast skill disappears when predictor selection is done inside cross-validation (skill vs climatology: +0.31 → −0.20).
 - **Pre-specified tests.** Of five pre-specified, cohort-aligned predictors, only larval-season upwelling (BEUTI, May–Aug) is associated with year-class strength after correction, and *negatively*. The association is modest, robust to detrending method, and has negligible forecast skill.
 - **Forecast skill.** Last year's pre-recruit survey forecasts this year's recruits better than any environmental index tested (out-of-sample skill +0.24 overall, up to +0.52 by beach).
+- **Environmental record.** The legacy station-blended temperature series contains station-switch offsets of up to 0.9 deg C; the pipeline now uses a homogenised open-coast series, and the SST conclusion is unchanged under four alternative constructions. BEUTI shows no step at its 2010/2011 product boundary; its trend remains to be verified (`docs/environmental-record-options.md`).
 
 Details and caveats: `docs/methodology-review.md` and `manuscript/manuscript.md`.
