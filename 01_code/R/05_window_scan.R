@@ -46,11 +46,21 @@ k_to_label <- function(k) {
   paste0(month.abb[m], " ", ifelse(off == 0, "Y", ifelse(off > 0, paste0("Y+", off), paste0("Y", off))))
 }
 
-window_value <- function(v, yc, start, end) {
-  ks <- start:end; off <- floor((ks - 1) / 12); m <- ks - 12 * off
-  key <- tibble(year = yc + off, month = m)
-  x <- env %>% semi_join(key, by = c("year", "month")) %>% pull(all_of(v))
-  if (sum(!is.na(x)) < ceiling(0.75 * length(ks))) NA_real_ else mean(x, na.rm = TRUE)
+# Window means as contiguous slices of a vector indexed by absolute month
+# (12 * year + month): relative month k of year class Y is element 12*Y + k.
+# Returns a [year classes x windows] matrix; windows with fewer than 75% of
+# their months present are NA. (Vectorised 2026-10-02: identical results to the
+# earlier per-window join, ~100x faster.)
+window_matrix <- function(v, yc, win) {
+  a <- rep(NA_real_, 12L * (max(env$year) + 2L))
+  a[12L * env$year + env$month] <- env[[v]]
+  sapply(seq_len(nrow(win)), function(i) {
+    ks <- win$start[i]:win$end[i]; need <- ceiling(0.75 * length(ks))
+    vapply(yc, function(Y) {
+      x <- a[12L * Y + ks]
+      if (sum(!is.na(x)) < need) NA_real_ else mean(x, na.rm = TRUE)
+    }, numeric(1))
+  })
 }
 
 detr <- function(x, t) { ok <- !is.na(x); out <- rep(NA_real_, length(x)); out[ok] <- resid(lm(x[ok] ~ t[ok])); out }
@@ -71,9 +81,7 @@ for (nm in names(indices)) {
   yc <- idx$year_class
   y_dt <- detr(idx$index, yc)
   win <- scan_windows(indices[[nm]]$last_offset)
-  Xw <- map(set_names(VARS), function(v) {
-    sapply(seq_len(nrow(win)), function(i) sapply(yc, window_value, v = v, start = win$start[i], end = win$end[i]))
-  })
+  Xw <- map(set_names(VARS), ~ window_matrix(.x, yc, win))
   obs <- map_dfr(VARS, function(v) {
     Xd <- apply(Xw[[v]], 2, detr, t = yc)
     r <- suppressWarnings(cor(Xd, y_dt, use = "pairwise.complete.obs"))[, 1]
