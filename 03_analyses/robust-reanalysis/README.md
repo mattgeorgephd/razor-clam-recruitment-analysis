@@ -26,6 +26,8 @@ Outputs of `Rscript 01_code/R/run_all.R`. Do not edit by hand; rerun the pipelin
 | `prerecruit_lt30_share_by_timing.csv` | 02 | Share of pre-recruits <20 mm and <30 mm by survey-timing class |
 | `cohort_linkage.csv` | 02 | r(pre_t, rec_t+1), r(pre_t, rec_t), r(rec_t, rec_t+1), r(pre_t, pre_t+1) by beach |
 | `synchrony_prerecruits.csv`, `synchrony_recruits.csv` | 02 | Cross-beach correlation matrices (log abundance) |
+| `abundance_summary.csv` | 02 | Median, range and SD(log) of abundance by beach and size class |
+| `synchrony_summary.csv` | 02 | Mean cross-beach correlation, raw and detrended, with and without Kalaloch |
 | `trends.csv` | 02 | GLS-AR(1) linear trends of log abundance and of predictors |
 | `null_audit_reproduction_check.csv` | 03 | Agreement with the committed legacy correlation matrix |
 | `null_audit_global.csv` | 03 | Observed vs surrogate-null count of p<0.05 cells; BH-FDR counts |
@@ -41,6 +43,7 @@ Outputs of `Rscript 01_code/R/run_all.R`. Do not edit by hand; rerun the pipelin
 | `window_scan_summary.csv`, `window_scan_best_per_variable.csv`, `window_scan_all.csv` | 05 | Scan results with naive p, BH q, family-wise p |
 | `forecast_skill_original_framework.csv`, `forecast_skill_original_by_series.csv` | 06 | Skill vs climatology for leaky/honest selection, persistence, carry-over |
 | `forecast_skill_cohort_framework.csv` | 06 | Skill of trend, BEUTI and trend+BEUTI models for year-class pre-recruits |
+| `forecast_2025_archived.csv` | 08 | **Archived** forecasts for survey 2025, made 2026-10-02 before the 2025 estimates were added. Do not regenerate; score against WDFW estimates (task T15) |
 | `forecast_skill_fallback_counts.csv` | 06 | Forecasts that fell back to climatology because a predictor was missing |
 
 Seeds are fixed (`SEED` in `01_code/R/00_config.R`), so surrogate-based p-values are reproducible to Monte Carlo precision (2,000 draws; ±0.01 near p = 0.05).

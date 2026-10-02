@@ -99,9 +99,11 @@ p_link <- survey %>% arrange(beach, survey_year) %>% group_by(beach) %>%
 save_fig(p_link, "fig_cohort_linkage", 11, 3.4)
 
 # ── (d) Synchrony and trends ────────────────────────────────────────────────
-sync <- function(var) {
+sync <- function(var, detrend = FALSE) {
   survey %>% select(beach, survey_year, v = all_of(var)) %>%
     filter(!is.na(v)) %>% mutate(v = log(v)) %>%
+    group_by(beach) %>%
+    mutate(v = if (detrend) resid(lm(v ~ survey_year)) else v) %>% ungroup() %>%
     pivot_wider(names_from = beach, values_from = v) %>%
     select(-survey_year) %>% cor(use = "pairwise.complete.obs") %>%
     as.data.frame() %>% rownames_to_column("beach")
@@ -126,5 +128,26 @@ trends_env <- cohort %>% filter(beach %in% c("Copalis", "Long Beach"), year_clas
   group_by(beach, series) %>%
   group_modify(~ gls_trend(.x$value, .x$year_class)) %>% ungroup()
 write_tab(bind_rows(trends_clam, trends_env), "trends")
+
+# ── (e) Descriptive summary of abundance ────────────────────────────────────
+abund_summary <- survey %>% filter(!is.na(pre_recruits)) %>%
+  pivot_longer(c(pre_recruits, recruits), names_to = "series") %>%
+  group_by(beach, series) %>%
+  summarise(n_years = n(), first = min(survey_year), last = max(survey_year),
+            median_millions = median(value) / 1e6, min_millions = min(value) / 1e6,
+            max_millions = max(value) / 1e6, max_min_ratio = max(value) / min(value),
+            sd_log = sd(log(value)), .groups = "drop")
+write_tab(abund_summary, "abundance_summary")
+
+sync_summary <- map_dfr(c("pre_recruits", "recruits"), function(v) map_dfr(c(FALSE, TRUE), function(dt) {
+  m <- sync(v, detrend = dt) %>% select(-beach) %>% as.matrix()
+  rownames(m) <- colnames(m)
+  south <- c("Mocrocks", "Copalis", "Twin Harbors", "Long Beach")
+  tibble(series = v, detrended = dt,
+         mean_r_all = mean(m[lower.tri(m)]),
+         mean_r_excl_kalaloch = mean(m[south, south][lower.tri(m[south, south])]),
+         mean_r_kalaloch_vs_others = mean(m["Kalaloch", south]))
+}))
+write_tab(sync_summary, "synchrony_summary")
 
 message("02_cohort_diagnostics: done")

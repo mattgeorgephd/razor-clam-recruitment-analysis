@@ -49,7 +49,10 @@ Last updated: 2026-10-02.
   - lower-Columbia discharge (e.g. Beaver Army Terminal, USGS 14246900, to be verified) instead of The Dalles.
 - [ ] **T13. Kalaloch data sources.** Kalaloch combines WDFW, Quinault and Olympic National Park surveys (`note` column), with length heaping at 50 and 58–60 mm, and is asynchronous with other beaches. Model a source covariate, or analyze Kalaloch separately.
 - [ ] **T14. Twin Harbors pre-recruits** mix current-year settlers (August survey) with year-old clams. Separate them with a length-mixture or date-adjusted cutoff before modelling.
-- [ ] **T15. Pre-register forecasts for the 2025 and 2026 surveys.** Shell lengths for 2025 are already in the repo, and the 2025-26 abundance estimate is pending. This is the only genuinely out-of-sample test available.
+- [ ] **T15. Score the archived 2025 forecasts, and archive 2026 forecasts.**
+  - *2025:* forecasts for survey 2025 were archived on 2026-10-02 (`03_analyses/robust-reanalysis/tables/forecast_2025_archived.csv`, `01_code/R/08_forecast_2025.R`). When the 2025-26 estimates are added, score them before refitting anything.
+  - *2026:* survey-2026 forecasts of year class 2025 need BEUTI for May–Aug 2025; the cached BEUTI file ends in April 2025, so update it first.
+  - *Blindness:* confirm whether the analyst has already seen the 2025-26 estimates; if so, the test is only partially blind.
 - [ ] **T16. Spectral analysis (notebook §15).** Remove it, or test periodogram peaks against an AR(1) null; 28 points cannot resolve 5–8 yr periods.
 - [ ] **T17. Pre-whitening (§16–17).** Uses a post hoc best month × lag (72 combinations); circular. Remove, or use a pre-specified predictor.
 - [ ] **T18. Half-monthly and weekly "timescales" (§4b–c, §7).** They use the same month-defined windows; only the temperature max/min statistic differs, and upwelling and discharge are identical monthly values. Either define genuinely finer windows (e.g. 2-week windows anchored to spawning dates) or drop them and stop presenting them as independent confirmation.

@@ -10,14 +10,15 @@ All analysis code. Run everything from the **repository root** (the folder with 
 |---|---|---|
 | `00_config.R` | Paths, constants (beaches, SST buoys, seed, surrogate count), plot theme, helpers. Sourced by every script | none |
 | `01_build_datasets.R` | Parses abundance, shell lengths (3 date encodings), upwelling, discharge, PDO and a homogeneous regional SST anomaly. Defines the **five pre-specified, cohort-aligned predictors** | `02_data/derived/survey_beach_year.csv`, `env_monthly.csv`, `cohort_table.csv` |
-| `02_cohort_diagnostics.R` | Survey timing, length-frequency by survey date, pre-recruit(t) → recruit(t+1) linkage, synchrony, trends | `fig_survey_timing`, `fig_length_frequency`, `fig_cohort_linkage`; `survey_timing_by_beach`, `cohort_linkage`, `trends`, `synchrony_*` |
+| `02_cohort_diagnostics.R` | Survey timing, length-frequency by survey date, pre-recruit(t) → recruit(t+1) linkage, synchrony, trends | `fig_survey_timing`, `fig_length_frequency`, `fig_cohort_linkage`; `survey_timing_by_beach`, `cohort_linkage`, `trends`, `synchrony_*`, `abundance_summary` |
 | `lib_original_grid.R` | Re-implements the legacy notebook's monthly screening grid, including its quirks. Shared helper, not run directly | none |
 | `03_null_audit.R` | Checks the grid reproduces the committed notebook output. Calibrates its correlations against 2,000 multivariate phase-randomized surrogates; FDR; detrended and effective-n re-tests of the 20 predictors the notebook selected | `fig_null_audit`; `null_audit_*` |
 | `04_confirmatory_models.R` | Pre-specified tests: pooled LMM with random year-class effect, trend, spawners and survey date; Holm correction. Sensitivity: no trend, no Kalaloch, coastwide GLS-AR(1), beach-specific GLS-AR(1) | `fig_confirmatory_forest`, `fig_beach_heterogeneity`; `confirmatory_*` |
 | `05_window_scan.R` | Exploratory climwin-style scan (1–4 month windows, 5 variables) with family-wise error from surrogates | `fig_window_scan_pre/rec`; `window_scan_*` |
 | `06_forecast_skill.R` | Rolling-origin forecasts. Compares climatology, persistence, stock carry-over, leaky vs honest predictor selection, and the pre-specified BEUTI model | `fig_forecast_skill`; `forecast_skill_*` |
 | `07_figures_overview.R` | Study-area map, abundance and predictor time series | `fig_study_area`, `fig_abundance_timeseries`, `fig_predictor_timeseries` |
-| `run_all.R` | Runs `01`–`07`; writes `sessionInfo.txt` | none |
+| `08_forecast_2025.R` | Archives forecasts for the 2025 survey (pre-recruits of year class 2024; carry-over recruits) made before 2025 estimates enter the repo. Never overwrites an existing archive | `forecast_2025_archived` |
+| `run_all.R` | Runs `01`–`08`; writes `sessionInfo.txt` | none |
 
 Figures are in `03_analyses/robust-reanalysis/figures/` (PNG, 300 dpi); tables are in `.../tables/` (CSV).
 

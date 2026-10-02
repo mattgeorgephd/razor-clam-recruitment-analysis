@@ -7,7 +7,7 @@
 
 scripts <- c("01_build_datasets.R", "02_cohort_diagnostics.R", "03_null_audit.R",
              "04_confirmatory_models.R", "05_window_scan.R", "06_forecast_skill.R",
-             "07_figures_overview.R")
+             "07_figures_overview.R", "08_forecast_2025.R")
 for (s in scripts) {
   message("\n▶ ", s)
   t0 <- Sys.time()
