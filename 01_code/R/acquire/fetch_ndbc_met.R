@@ -1,11 +1,10 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # fetch_ndbc_met.R — buoy winds, waves and pressure: local upwelling and storm indices
 # ═══════════════════════════════════════════════════════════════════════════════
-# STATUS: written without network access; not yet executed. The dataset
-# (cwwcNDBCMet on the CoastWatch ERDDAP) is the one 02_data/Environmental
-# Data/Wtmp_salt.R already uses for water temperature, so the id is reliable;
-# field names (wd, wspd, wvht, dpd, pres) should be confirmed with
-# rerddap::info("cwwcNDBCMet", url = ERDDAP).
+# The dataset (cwwcNDBCMet on the CoastWatch ERDDAP) is the one
+# 02_data/Environmental Data/Wtmp_salt.R already uses for water temperature.
+# Field names are upper case on the server (WD, WSPD, WVHT, DPD, BAR); they are
+# renamed to lower case after download.
 #
 # Why: (1) an upwelling index computed from measured winds at 46-47N is
 # independent of the ROMS-derived BEUTI/CUTI product and tests its trend;
@@ -17,6 +16,8 @@
 # Output: 02_data/Environmental Data/external/ndbc_met_monthly.csv with
 #   year, month,
 #   tau_along_anom      alongshore wind-stress anomaly (N m-2; + = equatorward = upwelling-favourable)
+#   <var>_clim          station-mean monthly climatology of each variable (same units), so that
+#                       anomaly + clim is an absolute value
 #   ekman_anom          offshore Ekman transport anomaly (m2 s-1), tau_along / (rho_w f)
 #   hs_anom             significant-wave-height anomaly (m)
 #   hs2_mean            mean of Hs^2 (energy proxy), station-homogenised anomaly
@@ -39,12 +40,13 @@ info <- rerddap::info(DATASET, url = ERDDAP)
 raw <- map_dfr(STATIONS, function(s) {
   f <- file.path(RAW_DIR, sprintf("ndbc_met_%s.rds", s))
   if (file.exists(f)) return(readRDS(f))
-  d <- tryCatch(rerddap::tabledap(info, fields = c("station", "time", "wd", "wspd", "wvht", "dpd", "pres"),
+  d <- tryCatch(rerddap::tabledap(info, fields = c("station", "time", "WD", "WSPD", "WVHT", "DPD", "BAR"),
                                   sprintf('station="%s"', s), "time>=1990-01-01"),
-                error = function(e) NULL)
+                error = function(e) { message("  ", s, ": ", conditionMessage(e)); NULL })
   if (is.null(d)) { message("  ", s, ": download failed"); return(NULL) }
-  d <- as_tibble(d) %>% mutate(across(c(wd, wspd, wvht, dpd, pres), as.numeric),
-                               time = as.POSIXct(time, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"))
+  d <- as_tibble(d) %>% rename(wd = WD, wspd = WSPD, wvht = WVHT, dpd = DPD, pres = BAR) %>%
+    mutate(across(c(wd, wspd, wvht, dpd, pres), as.numeric),
+           time = as.POSIXct(time, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"))
   saveRDS(d, f); message("  ", s, ": ", nrow(d), " records"); d
 })
 
@@ -71,7 +73,12 @@ wave_m <- raw %>% filter(!is.na(wvht), wvht < 30) %>% mutate(year = year(time), 
 homog <- function(d, col) {
   fit <- homogenize_stations(d %>% transmute(station, year, month, value = .data[[col]]), CLIM_YEARS,
                              min_station_months = SST_MIN_STATION_MONTHS)
-  fit$regional %>% transmute(year, month, !!paste0(col, "_anom") := anom, !!paste0("n_", col) := n_stations)
+  # station-mean climatology is kept so that anomalies and trends can be read
+  # relative to the seasonal mean (e.g. a trend as a share of the May-Aug mean)
+  clim <- fit$clim %>% group_by(month) %>% summarise(clim = mean(clim), .groups = "drop")
+  fit$regional %>% left_join(clim, by = "month") %>%
+    transmute(year, month, !!paste0(col, "_anom") := anom, !!paste0(col, "_clim") := clim,
+              !!paste0("n_", col) := n_stations)
 }
 out <- homog(wind_m, "tau_along") %>%
   full_join(homog(wind_m, "ekman"), by = c("year", "month")) %>%

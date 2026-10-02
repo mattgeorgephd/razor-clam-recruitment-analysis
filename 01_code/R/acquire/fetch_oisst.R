@@ -1,8 +1,8 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # fetch_oisst.R — NOAA OISST v2.1 daily 0.25-degree SST near the five beaches
 # ═══════════════════════════════════════════════════════════════════════════════
-# STATUS: written without network access; not yet executed. Verify the dataset
-# id with rerddap::ed_search(query = "OISST", url = ERDDAP) if the script stops.
+# Dataset id confirmed on the server 2026-10-02 (coverage 1981-09-01 onward).
+# The grid has a degenerate depth axis (zlev = 0) that must be requested.
 #
 # Why OISST: homogeneous, gap-free, daily, 1981-09 to present, so it covers the
 # whole clam record with one product, unlike the station patchwork. Caveats:
@@ -38,17 +38,29 @@ if (is.null(info)) {
 }
 
 # ── 2. Download year by year (keeps each request small), cache as RDS ───────
-years <- 1981:year(Sys.Date())
+# ERDDAP rejects time bounds outside the dataset's coverage, so clamp to it.
+t_end <- info$alldata$NC_GLOBAL %>% filter(attribute_name == "time_coverage_end") %>% pull(value)
+t_end <- as.Date(substr(t_end, 1, 10))
+t_start <- info$alldata$NC_GLOBAL %>% filter(attribute_name == "time_coverage_start") %>% pull(value)
+years <- 1981:year(t_end)
 daily <- map_dfr(years, function(y) {
   f <- file.path(RAW_DIR, sprintf("oisst_%d.rds", y))
   if (file.exists(f)) return(readRDS(f))
-  t0 <- if (y == 1981) "1981-09-01" else sprintf("%d-01-01", y)
-  t1 <- if (y == year(Sys.Date())) as.character(Sys.Date() - 2) else sprintf("%d-12-31", y)
-  g <- tryCatch(rerddap::griddap(info, time = c(t0, t1), latitude = BOX$lat, longitude = BOX$lon,
-                                 fields = "sst", fmt = "csv"), error = function(e) NULL)
+  t0 <- if (y == 1981) t_start else sprintf("%d-01-01", y)   # full ISO string at the lower bound
+  t1 <- if (y == year(t_end)) as.character(t_end) else sprintf("%d-12-31", y)
+  g <- tryCatch(rerddap::griddap(info, time = c(t0, t1), zlev = c(0, 0),
+                                 latitude = BOX$lat, longitude = BOX$lon,
+                                 fields = "sst", fmt = "csv", read = TRUE),
+                error = function(e) { message("  ", y, ": ", conditionMessage(e)); NULL })
   if (is.null(g)) { message("  ", y, ": download failed; skipped"); return(NULL) }
   d <- as_tibble(g) %>% transmute(date = as.Date(time), lat = latitude, lon = longitude, sst) %>%
     filter(!is.na(sst))
+  # The ERDDAP aggregation is incomplete for 1992-1998 (its own time axis holds
+  # only 139-239 days of those years, checked 2026-10-02); other years are full.
+  # Days are kept as served; the monthly step requires >= 10 days per month.
+  expected <- as.integer(as.Date(t1) - as.Date(substr(t0, 1, 10))) + 1L
+  if (n_distinct(d$date) < 0.95 * expected)
+    message("  ", y, ": server holds only ", n_distinct(d$date), " of ", expected, " days")
   saveRDS(d, f); message("  ", y, ": ", nrow(d), " pixel-days"); d
 })
 
@@ -65,12 +77,14 @@ pix_beach <- cross_join(beaches, pixels) %>% mutate(d_km = hav(lat.x, lon.x, lat
 write_csv(pix_beach, file.path(EXT_DIR, "oisst_pixels.csv"))
 
 # ── 4. Monthly means, per-pixel climatology, anomalies ──────────────────────
+MIN_DAYS <- 10   # OISST varies slowly at 0.25 deg; 1992-1998 have ~15 days per month on the server
 monthly <- daily %>% mutate(year = year(date), month = month(date)) %>%
   group_by(lat, lon, year, month) %>% summarise(sst = mean(sst), n = n(), .groups = "drop") %>%
-  filter(n >= 20) %>%
+  filter(n >= MIN_DAYS) %>%
   group_by(lat, lon, month) %>% mutate(anom = sst - mean(sst[year %in% CLIM_YEARS])) %>% ungroup()
 regional <- monthly %>% group_by(year, month) %>%
-  summarise(anom_regional = mean(anom), sst_regional = mean(sst), n_pixels_regional = n(), .groups = "drop")
+  summarise(anom_regional = mean(anom), sst_regional = mean(sst), n_pixels_regional = n(),
+            n_days = max(n), .groups = "drop")
 by_beach <- monthly %>% inner_join(pix_beach, by = c("lat", "lon"), relationship = "many-to-many") %>%
   group_by(beach, year, month) %>% summarise(anom = mean(anom), .groups = "drop") %>%
   mutate(beach = paste0("anom_", gsub(" ", "_", tolower(beach)))) %>%
@@ -81,6 +95,9 @@ write_csv(out, file.path(EXT_DIR, "oisst_monthly.csv"))
 writeLines(c(paste("OISST v2.1 via", ERDDAP, "dataset", DATASET), paste("downloaded", Sys.Date()),
              paste("box lat", paste(BOX$lat, collapse = "-"), "lon", paste(BOX$lon, collapse = "-")),
              paste("climatology", min(CLIM_YEARS), "-", max(CLIM_YEARS)),
+             paste("monthly mean requires >=", MIN_DAYS, "days; days per year on the server:"),
+             paste(" ", daily %>% mutate(y = year(date)) %>% distinct(y, date) %>% count(y) %>%
+                     mutate(s = paste0(y, ":", n)) %>% pull(s), collapse = " "),
              paste("rerddap", as.character(packageVersion("rerddap"))),
              paste("md5 oisst_monthly.csv", tools::md5sum(file.path(EXT_DIR, "oisst_monthly.csv")))),
            file.path(EXT_DIR, "oisst_provenance.txt"))

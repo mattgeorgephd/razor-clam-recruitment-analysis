@@ -8,3 +8,7 @@
 03_analyses/robust-reanalysis/run_log.txt
 03_analyses/robust-reanalysis/notebook_run.log
 03_analyses/robust-reanalysis-fast/
+
+# Raw download caches of the acquire scripts (regenerable; the monthly CSVs beside them are committed)
+02_data/Environmental Data/external/raw/
+03_analyses/robust-reanalysis-vintage-current/

@@ -1,0 +1,5 @@
+USGS Water Data API daily mean discharge (00060, statistic 00003) via dataRetrieval::read_waterdata_daily
+beaver 14246900; willamette 14211720; dalles 14105700
+downloaded 2026-10-02
+dataRetrieval 2.7.26
+md5 columbia_lower_monthly.csv 7f00df283541ca7e676a53cefcd243d1
