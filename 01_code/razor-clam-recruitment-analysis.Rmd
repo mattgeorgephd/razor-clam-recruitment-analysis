@@ -257,22 +257,33 @@ dat          <- read_excel("02_data/razor-clam-season-summary-1997-2025.xlsx", s
 # Each row = one clam with shell length (mm), estimated age, size class,
 # and age class assignments.
 #
-# GROWTH MODEL: von Bertalanffy parameters from Cheng & Kuk (2002) model
-# fitted to WA capture-recapture data (2005–2007):
+# GROWTH MODEL: von Bertalanffy parameters from the unpublished WDFW draft
+# Cheng YW, Ayres D (2008, authorship to confirm) "Modelling the growth of
+# razor clam (Siliqua patula) in Washington State coast", fitted to 2006-2007
+# mark-recapture data by the random-effects method of Cheng & Kuk (2002,
+# Biometrics 58:459-462):
 #   Copalis:    L∞ = 143.17 mm (SE 1.78), K = 1.00/yr (SE 0.06)
 #   Long Beach: L∞ = 141.67 mm (SE 1.00), K = 0.98/yr (SE 0.04)
-# Source: Cheng et al., "Modelling the growth of razor clam (Siliqua patula)
-#         in Washington State coast" — WDFW/UW mark-recapture study.
 # Northern beaches (Kalaloch, Mocrocks) use Copalis parameters (closest
 # study site); Twin Harbors uses Long Beach parameters (closest study site).
 #
-# von Bertalanffy: L(t) = L∞ × (1 - exp(-K × t))
+# CAUTION (2026-10-02, docs/growth-model-review.md): a mark-recapture study
+# with no known-age animals identifies K and L∞ from increments but NOT t0,
+# so the age scale below (t0 = 0) is arbitrary. The survey length data of
+# the year-old cohort imply t0 = +0.39 to +0.51 yr (mixture component / kernel
+# mode, 140 beach-years), so every age computed here is about half a year too
+# young: pre-recruits at June surveys are ~0.9 yr old (previous year's
+# settlement), and 76 mm is reached at ~1.1-1.3 yr, not 0.76. The robust
+# pipeline (01_code/R/) uses size classes and survey dates instead.
+#
+# von Bertalanffy: L(t) = L∞ × (1 - exp(-K × t))     [t0 = 0 assumed here]
 # Inverse:         t = -ln(1 - L/L∞) / K
 #
-# Size-at-age implications (Copalis / Long Beach):
+# Size-at-age implications with t0 = 0 (Copalis / Long Beach):
 #   Age 0.5: 56 / 55 mm    Age 1.0: 91 / 89 mm
 #   Age 1.5: 111 / 109 mm  Age 2.0: 124 / 122 mm
 #   Age 3.0: 136 / 134 mm  Age 5.0: 142 / 141 mm
+# With t0 = 0.4-0.5 the same lengths are reached 0.4-0.5 yr later.
 
 sl_raw <- read_excel("02_data/shell_length_data-summary/All_Beaches_shell_lengths_1997-2025.xlsx",
                       sheet = "All_Clams_Raw")
@@ -287,7 +298,7 @@ cat("Beaches:", paste(unique(sl_raw$beach), collapse = ", "), "\n")
 cat("Year range:", min(sl_raw$survey_year), "–", max(sl_raw$survey_year), "\n")
 
 # ── WA-specific von Bertalanffy growth parameters ─────────────────────────
-# Beach-specific parameters from Cheng et al. mark-recapture study.
+# Beach-specific parameters from the Cheng and Ayres (2008) mark-recapture draft.
 # Copalis parameters applied to northern beaches not in the study.
 vb_params <- tibble(
   beach  = c("Kalaloch", "Mocrocks", "Copalis", "Twin Harbors", "Long Beach"),

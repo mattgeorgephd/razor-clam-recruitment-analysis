@@ -147,7 +147,7 @@ The committed outputs in `03_analyses/20260322-recruitment-analysis/` were produ
 ### 4.1 Response variables and the age-class decomposition
 
 - **YOY is not a new response.** "YOY" abundance equals `pre_recruits` by construction, so Sections 23–26 duplicate the pre-recruit analysis under a new name.
-- **Juvenile, Sub-adult and Adult are length-defined fractions of recruits** (76–100, 101–120, >120 mm). Their labels come from inverting a von Bertalanffy curve with **t₀ = 0** and parameters attributed to "Cheng & Kuk (2002)". I could not locate that source; it needs a full citation or replacement.
+- **Juvenile, Sub-adult and Adult are length-defined fractions of recruits** (76–100, 101–120, >120 mm). Their labels come from inverting a von Bertalanffy curve with **t₀ = 0** and parameters attributed to "Cheng & Kuk (2002)". *Resolved 2026-10-02:* the parameters are from an unpublished 2008 WDFW mark-recapture draft (Cheng and Ayres; method of Cheng & Kuk 2002), and the survey length modes place t₀ at 0.51 ± 0.19 yr (`docs/growth-model-review.md`), which quantifies the half-year offset described below.
   - Mark-recapture (Fabens-type) fits estimate L∞ and K but not t₀, so absolute age from length is not identifiable without it.
   - The observed modes contradict the implied ages. A June age-1 mode at 20–50 mm is far below the 91 mm that the curve predicts at age 1.
   - These are size classes and should be called size classes.
@@ -283,7 +283,7 @@ The same-sign but weaker CUTI result (first differences p = 0.03, levels p = 0.3
 4. **Report honest out-of-sample skill** (`06_forecast_skill.R`), with climatology and persistence baselines.
 5. **Replace the station-blended temperature** with a homogeneous product: done for buoy anomalies (two-way station model), and satellite SST (OISST, MUR) plus buoy wind and wave records are now fetched and compared in step 09 (`docs/environmental-record-options.md` §6). The remaining step is to declare the new predictor family (local wind-driven upwelling, winter wave energy, lower-river freshet, beach-level SST) before testing it.
 6. **Verify BEUTI homogeneity.** The current vintage of the index (the primary since 2026-10-02, task T35) has a level shift at the 2010/2011 product boundary at 47N (+1.1 units, p = 0.02); the earlier snapshot had none. Measured buoy winds reproduce CUTI's interannual variation (r = 0.72) and its trend (about +18–24% of the mean per decade in both), but BEUTI's trend is about three times larger relative to its mean and the winds explain only a third of its detrended variance. Contact the index authors with `fig_wind_vs_upwelling.png` and `fig_index_vintages.png` (`docs/environmental-record-options.md` §6). Key results already use detrended BEUTI and CUTI, and the BEUTI association has the same sign and similar size under both vintages.
-7. **Resolve the growth-model citation (Cheng & Kuk 2002) or drop age labels.** Call the classes size classes.
+7. **Growth-model citation resolved; keep size classes.** The parameters come from an unpublished 2008 WDFW mark-recapture draft (Cheng and Ayres; method of Cheng & Kuk 2002), which identifies K and L∞ but not t0; the survey length modes put t0 at about 0.5 yr, so the notebook's ages are half a year too young (`docs/growth-model-review.md`). Call the classes size classes; where an age is needed, use the curve with the fitted t0.
 8. **Obtain the variance of each WDFW abundance estimate** and propagate it, either as weights or in a state-space model.
 
 **Should do**

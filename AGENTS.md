@@ -7,7 +7,7 @@ This repository analyzes Washington coast Pacific razor clam (*Siliqua patula*) 
 1. `README.md`: what is where.
 2. `docs/methodology-review.md`: what is wrong with the original analysis and why. Section 1 is a 1-page summary.
 3. `task.md`: open issues with priorities. Check it before starting work, and update it when you fix or find something.
-3a. `docs/forecast-protocol.md` and `docs/harvest-monitoring-review.md`: the prospective test and what the companion harvest repository does and does not provide.
+3a. `docs/forecast-protocol.md`, `docs/harvest-monitoring-review.md` and `docs/growth-model-review.md`: the prospective test, what the companion harvest repository does and does not provide, and what the WDFW growth draft does and does not establish.
 4. `manuscript/manuscript.md`: current draft. Every number in it must come from `03_analyses/robust-reanalysis/tables/`.
 
 ## Two analysis code paths
@@ -35,9 +35,9 @@ This repository analyzes Washington coast Pacific razor clam (*Siliqua patula*) 
 - **Survey year.** `survey_year` = first year of the season label (`"2003-04"` → 2003). The stock-assessment survey happens April–August *of that year*, before the fall–spring harvest season.
 - **Survey timing differs by beach and over time.** Median dates: Long Beach about 6 Jun, Copalis about 16 Jun (Apr–May in 1997–99), Mocrocks about 18 Jul, Kalaloch about 24 Jul, Twin Harbors about 9 Aug. See `03_analyses/robust-reanalysis/tables/survey_timing_by_beach.csv`.
 - **Size classes, not ages.** Pre-recruits are <76 mm, recruits ≥76 mm.
-  - At June surveys, pre-recruits are mostly the *previous* year's settlement.
+  - At June surveys, pre-recruits are mostly the *previous* year's settlement (modal length 41–43 mm at the June beaches, 60–64 mm at the August beaches; `tables/growth_model_check.csv`).
   - Current-year settlers (≤20 mm) appear only in surveys after mid-July.
-  - Do not call pre-recruits "young-of-year spawned in the survey year".
+  - Do not call pre-recruits "young-of-year spawned in the survey year". With the WDFW growth curve placed on the age axis (t0 ≈ 0.4–0.5 yr), 76 mm is reached at about 1.1–1.3 yr, in the autumn after the first survey; at the August surveys (Twin Harbors) the fast tail of the year-old cohort is already above 76 mm in about half of the years (task T14).
 - **Year class Y** (spawned summer Y) is counted as pre-recruits at survey Y+1 and mostly as recruits at Y+2. Define predictors relative to Y, not to the survey year.
 - **Abundance** = density × `habitat_m2`, and habitat area changes in steps. Density is precomputed in `02_data/derived/survey_beach_year.csv`.
 - **Kalaloch** mixes WDFW, Quinault and Olympic National Park survey data and behaves differently from the other beaches. Always show results with and without it.
@@ -65,7 +65,7 @@ The analysis is **exploratory by design** (owner decision 2026-10-02): its aim i
 - **Outputs:** the new pipeline writes to the fixed folder `03_analyses/robust-reanalysis/`, overwritten on every run. The legacy notebook writes date-stamped folders; do not delete `03_analyses/20260322-recruitment-analysis/` (it backs earlier presentations), but treat its numbers as superseded (task T29).
 - **Figures:** 300 dpi PNG via `save_fig()` in `00_config.R`. Use ASCII in plot labels: en dashes, ×, ° and ³ render as ".." with the fonts available in headless environments.
 - **Style:** tidyverse; section banners `# ── Title ───`; comments explain *why*.
-- **Citations:** mark each reference with its verification status ([V] checked in source, [A] abstract only, [C] to check). Never invent references or page numbers. The growth-parameter source "Cheng & Kuk (2002)" cited in the notebook could not be located; do not propagate it.
+- **Citations:** mark each reference with its verification status ([V] checked in source, [A] abstract only, [C] to check). Never invent references or page numbers. The growth parameters (L∞ 143.17/141.67 mm, K 1.00/0.98) come from an unpublished 2008 WDFW draft (Cheng and Ayres, authorship to confirm; `docs/growth-model-review.md`), fitted by the method of Cheng & Kuk (2002, *Biometrics* 58:459–462); cite both, never "Cheng & Kuk (2002)" alone for the parameters. The curve's t0 is not identified by that study; the survey length data imply t0 ≈ 0.4–0.5 yr, so the notebook's ages are about half a year too young.
 - **Prose style** (owner preference): no em dashes in prose; use commas or semicolons.
 - **Commits:** small and descriptive. Never commit secrets or large regenerable binaries without need.
 

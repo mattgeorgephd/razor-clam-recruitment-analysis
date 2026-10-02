@@ -72,6 +72,7 @@ An initial exploratory analysis of these data suggested that upwelling during th
 - **Length composition.** We examined length-frequency distributions grouped by survey timing (before 15 June, 15 June–15 July, after 15 July).
 - **Cohort linkage.** We tested whether pre-recruits counted in year t predict recruits counted in year t+1.
 - **Year class Y.** On this basis we defined year class Y as the cohort spawned and settling in summer Y, counted as pre-recruits at survey Y+1 and largely as recruits at survey Y+2. All environmental windows were defined relative to Y.
+- **Growth curve.** WDFW fitted von Bertalanffy curves to 2006–2007 mark-recapture data at Copalis (L∞ = 143.2 mm, K = 1.00 yr⁻¹) and Long Beach (141.7 mm, 0.98 yr⁻¹) by the random-effects method for unknown age at first capture (Cheng & Ayres 2008 **[V]**; Cheng & Kuk 2002 **[V]**). Growth increments identify K and L∞ but not the age origin t₀, so we located the curve on the age axis with the survey data: for each beach-year with at least 150 measurements we identified the year-old cohort in two ways, as the modal length of 15–72 mm clams (excluding current-year settlers of ≤20 mm after mid-July) and as the year-old component of a three- or four-component normal mixture fitted to the whole length range, assigned it an age counted from 1 August of the previous year, and solved for t₀.
 
 ### 2.3 Environmental data
 
@@ -185,6 +186,7 @@ All analyses used log abundance. Pre-recruit and recruit abundance were never ze
   - Log pre-recruits at survey t were correlated with log recruits at survey t+1 at Kalaloch (r = 0.51, p = 0.006), Mocrocks (0.50, p = 0.008), Copalis (0.58, p = 0.002) and Long Beach (0.50, p = 0.009).
   - There was no such link at Twin Harbors (−0.16, p = 0.43), where August pre-recruit counts mix new settlers with year-old clams.
   - Same-year correlations between pre-recruits and recruits were weak (−0.24 to 0.40).
+- **Growth curve on the age axis** [`growth_model_check.csv`; Fig. 12]. The year-old cohort grew from 41–53 mm at the June-surveyed beaches (Copalis, Long Beach) to 48–62 mm at Mocrocks (mid-July) and 59–69 mm at Kalaloch and Twin Harbors (late July to August), the two values being the kernel mode and the mixture component. With WDFW's K and L∞ these imply t₀ = 0.51 ± 0.19 yr (modes) or 0.39 ± 0.17 yr (mixture) over 140 beach-years, the same at all five beaches to within 0.07 yr under either identification. On that curve a year class reaches 76 mm at 1.14–1.27 yr, in the autumn after its first survey, and is at 103–110 mm at its second, so it is counted as pre-recruits at survey Y+1 and recruits at survey Y+2 at the June- and July-surveyed beaches. At the August surveys the fast tail of the year-old cohort reaches 76 mm: the mixture placed part of it above 76 mm in 55% of Twin Harbors beach-years. The notebook's age labels, which assumed t₀ = 0, were about half a year too young. A separate 20–25 mm component was supported in 41–57% of June beach-years, where it cannot be current-year settlement.
 
 ### 3.3 Exhaustive screening is compatible with chance
 
@@ -304,7 +306,7 @@ Recruit abundance was more synchronous among beaches than pre-recruit abundance 
 
 ### 4.5 Limitations and next steps
 
-- **Size classes are not ages.** The 76 mm boundary splits the age-1 cohort at late surveys, so environmental effects on growth can appear as effects on abundance. Date-aware length-mixture models could separate cohorts objectively.
+- **Size classes are not ages.** The 76 mm boundary is crossed at about 1.1–1.3 yr on the growth curve, after the June and July surveys of the year class's first year, so it separates the year-old cohort from older clams there; at the August surveys (Twin Harbors) the fast tail of the year-old cohort crosses it in about half of the years, and slow two-year-olds can fall below it, so environmental effects on growth can appear as effects on abundance. Date-aware length-mixture models with the growth curve as prior could separate cohorts objectively (the mixture used here is a first step).
 - **Observation error.** The abundance estimates have no published sampling variance; WDFW's harvest-monitoring work quantifies the uncertainty of the harvest estimates but holds no stock-assessment variance [`docs/harvest-monitoring-review.md`]. A two-stage (transects within beach, plots within transect) variance from the raw pumped-area counts is the direct route; process and observation error can then be separated in a state-space model. **TODO.**
 - **Harvest.** Harvest between surveys (exploitation targets 16–40%) affects recruit abundance and the carry-over relationship. The protocol's escapement model removes it; several harvest values in the season summary are under reconciliation with the harvest-monitoring record. **TODO.**
 - **Environmental coverage.** Satellite SST, buoy winds and waves and lower-river gauges are now in the record and in the search. Still missing are plume salinity at Long Beach, nearshore temperature in the surf zone, and a transport index for larvae.
@@ -355,6 +357,8 @@ Figures are generated by `01_code/R/run_all.R` into `03_analyses/robust-reanalys
 
 ![**Fig. 11.** Rolling-origin forecast skill for year-class pre-recruits: the exploratory candidate selected honestly inside each training window versus selected once on all years, against trend and a priori models.](../03_analyses/robust-reanalysis/figures/fig_forecast_skill_cohort.png)
 
+![**Fig. 12.** The year-old cohort's length by survey date at each beach (kernel mode and mixture component per beach-year, with the settler component where present), against the WDFW growth curve with t₀ = 0 (dotted) and with t₀ fitted to the modes (solid) and to the mixture (dashed).](../03_analyses/robust-reanalysis/figures/fig_growth_curve_check.png)
+
 ## Supplementary material (to assemble)
 
 - **S1.** Station audit of the original temperature series (`docs/methodology-review.md` §2.4).
@@ -372,6 +376,8 @@ Figures are generated by `01_code/R/run_all.R` into `03_analyses/robust-reanalys
 - Ambroise C, McLachlan GJ (2002) Selection bias in gene extraction on the basis of microarray gene-expression data. *Proceedings of the National Academy of Sciences USA* 99:6562–6566. https://doi.org/10.1073/pnas.102102699 **[A]**
 - Bailey LD, van de Pol M (2016) climwin: an R toolbox for climate window analysis. *PLoS ONE* 11:e0167980. https://doi.org/10.1371/journal.pone.0167980 **[A]**
 - Bates D, Mächler M, Bolker B, Walker S (2015) Fitting linear mixed-effects models using lme4. *Journal of Statistical Software* 67(1):1–48 **[C]**
+- Cheng YW, Ayres D [authorship to confirm] (2008) Modelling the growth of razor clam (*Siliqua patula*) in Washington State coast. Unpublished draft, Washington Department of Fish and Wildlife, Olympia **[V]** (read in full; the file names no authors)
+- Cheng YW, Kuk AYC (2002) Determination of the unknown age at first capture of western rock lobsters (*Panulirus cygnus*) by random effects model. *Biometrics* 58:459–462. https://doi.org/10.1111/j.0006-341x.2002.00459.x **[V]** (Crossref record; full text to check)
 - Benjamini Y, Hochberg Y (1995) Controlling the false discovery rate: a practical and powerful approach to multiple testing. *Journal of the Royal Statistical Society B* 57:289–300 **[A]**
 - Berry-Powell CA, Forster Z, Ayres D, Parson C, Losee JP (2023) Using the pumped area method for the assessment of recreational razor clam, *Siliqua patula*, populations in Washington State. *Journal of Shellfish Research* 42:91–98. https://doi.org/10.2983/035.042.0109 **[A]**
 - Connolly SR, Menge BA, Roughgarden J (2001) A latitudinal gradient in recruitment of intertidal invertebrates in the northeast Pacific Ocean. *Ecology* 82:1799–1813 **[C]**

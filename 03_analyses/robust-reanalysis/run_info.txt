@@ -1,19 +1,19 @@
-run_all.R  2026-10-02 19:46:30
-commit     583c5a6 (uncommitted changes present)
+run_all.R  2026-10-02 21:34:52
+commit     7e8fc68 (uncommitted changes present)
 args       (none)
 out        /home/user/razor-clam-recruitment-analysis/03_analyses/robust-reanalysis
 surrogates 2000
 vintage    current
 R          4.3.3
-total      132 s
+total      160 s
 
-01  01_build_datasets.R                15 s  ok
-02  02_cohort_diagnostics.R             8 s  ok
+01  01_build_datasets.R                17 s  ok
+02  02_cohort_diagnostics.R            38 s  ok
 03  03_null_audit.R                    13 s  ok
-04  04_confirmatory_models.R            4 s  ok
-05  05_window_scan.R                    9 s  ok
-06  06_forecast_skill.R                52 s  ok
+04  04_confirmatory_models.R            3 s  ok
+05  05_window_scan.R                    8 s  ok
+06  06_forecast_skill.R                50 s  ok
 07  07_figures_overview.R               2 s  ok
 08  08_forecast_protocol.R              0 s  ok
-09  09_env_record_diagnostics.R        27 s  ok
+09  09_env_record_diagnostics.R        26 s  ok
 10  10_report.R                         2 s  ok

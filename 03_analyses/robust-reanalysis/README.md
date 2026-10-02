@@ -12,6 +12,7 @@ Outputs of `./run_pipeline.sh` (`01_code/R/run_all.R`). Do not edit by hand; rer
 | `fig_survey_timing.png` | 02 | Median survey date by beach and year |
 | `fig_length_frequency.png` | 02 | Length-frequency by beach and survey timing (settler mode only in late surveys) |
 | `fig_cohort_linkage.png` | 02 | log pre-recruits(t) vs log recruits(t+1) |
+| `fig_growth_curve_check.png` | 02 | Modal length of the year-old cohort by survey date vs the WDFW growth curve with t0 = 0 and with t0 fitted |
 | `fig_null_audit.png` | 03 | Observed max\|r\| from the original 90-cell screen vs 2,000 phase-randomized surrogates |
 | `fig_confirmatory_forest.png` | 04 | Pre-specified predictor effects (pooled LMM; primary, no-Kalaloch, no-trend) |
 | `fig_beach_heterogeneity.png` | 04 | Beach-specific GLS-AR(1) effects |
@@ -32,6 +33,7 @@ Outputs of `./run_pipeline.sh` (`01_code/R/run_all.R`). Do not edit by hand; rer
 | `survey_timing_by_beach.csv` | 02 | Median and SD of survey day of year; trend (days per year) |
 | `prerecruit_lt30_share_by_timing.csv` | 02 | Share of pre-recruits <20 mm and <30 mm by survey-timing class |
 | `cohort_linkage.csv` | 02 | r(pre_t, rec_t+1), r(pre_t, rec_t), r(rec_t, rec_t+1), r(pre_t, pre_t+1) by beach |
+| `growth_model_check.csv`, `growth_model_check_by_year.csv` | 02 | The WDFW growth curve placed on the age axis: implied t0 by beach and beach-year, age at 76 mm, expected cohort lengths at surveys Y+1 and Y+2 |
 | `synchrony_prerecruits.csv`, `synchrony_recruits.csv` | 02 | Cross-beach correlation matrices (log abundance) |
 | `abundance_summary.csv` | 02 | Median, range and SD(log) of abundance by beach and size class |
 | `synchrony_summary.csv` | 02 | Mean cross-beach correlation, raw and detrended, with and without Kalaloch |
