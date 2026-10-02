@@ -15,8 +15,9 @@ Outputs of `./run_pipeline.sh` (`01_code/R/run_all.R`). Do not edit by hand; rer
 | `fig_null_audit.png` | 03 | Observed max\|r\| from the original 90-cell screen vs 2,000 phase-randomized surrogates |
 | `fig_confirmatory_forest.png` | 04 | Pre-specified predictor effects (pooled LMM; primary, no-Kalaloch, no-trend) |
 | `fig_beach_heterogeneity.png` | 04 | Beach-specific GLS-AR(1) effects |
-| `fig_window_scan_pre.png`, `fig_window_scan_rec.png` | 05 | Exploratory window scan; outlined cells would pass family-wise control (none do) |
-| `fig_forecast_skill.png` | 06 | Out-of-sample skill: leaky vs honest selection, persistence, carry-over |
+| `fig_window_scan_pre.png`, `fig_window_scan_rec.png` | 05 | Exploratory window scan over every environmental series; outlined cells would pass family-wise control (none do) |
+| `fig_forecast_skill.png` | 06 | Out-of-sample skill (original framework): leaky vs honest selection, persistence, carry-over |
+| `fig_forecast_skill_cohort.png` | 06 | Out-of-sample skill (year-class framework): honest vs leaky selection from the full catalogue against trend and a priori models |
 | `fig_env_coverage.png` | 09 | Month-by-month coverage of every environmental source |
 | `fig_legacy_idw_vs_homogenized.png` | 09 | Legacy station-blended beach temperature vs the homogenised regional anomaly |
 | `fig_sst_homogenization.png` | 09 | Regional SST anomaly under six constructions (buoys, OISST, MUR), with +/- 2 SE |
@@ -46,10 +47,13 @@ Outputs of `./run_pipeline.sh` (`01_code/R/run_all.R`). Do not edit by hand; rer
 | `confirmatory_by_beach.csv` | 04 | Beach-specific GLS-AR(1) effects, BH q |
 | `confirmatory_beuti_robustness.csv` | 04 | BEUTI and CUTI under linear/loess detrending, first differences, leave-one-out, without the most influential year, post-2003 |
 | `confirmatory_predictor_correlations.csv` | 04 | Correlations among predictors and with year |
-| `window_scan_summary.csv`, `window_scan_best_per_variable.csv`, `window_scan_all.csv` | 05 | Scan results with naive p, BH q, family-wise p |
+| `window_scan_summary.csv`, `window_scan_best_per_variable.csv`, `window_scan_top10.csv`, `window_scan_all.csv` | 05 | Scan results with naive p, BH q, family-wise p; raw r and r with year beside the detrended r |
+| `window_scan_trend_attribution.csv` | 05 | Strongest undetrended window per series, split into trend (r with year) and what remains after detrending |
 | `forecast_skill_original_framework.csv`, `forecast_skill_original_by_series.csv` | 06 | Skill vs climatology for leaky/honest selection, persistence, carry-over |
-| `forecast_skill_cohort_framework.csv` | 06 | Skill of trend, BEUTI and trend+BEUTI models for year-class pre-recruits |
-| `forecast_2025_archived.csv` | 08 | **Archived** forecasts for survey 2025, made 2026-10-02 before the 2025 estimates were added. Do not regenerate; score against WDFW estimates (task T15) |
+| `forecast_skill_cohort_framework.csv`, `forecast_skill_cohort_selections.csv`, `forecast_selection_stability.csv`, `forecast_skill_cohort_fallback_counts.csv` | 06 | Year-class framework: skill of trend, a priori BEUTI, honest and leaky scan selection; which series and window each origin chose; selection stability |
+| `forecast_ledger.csv` | 08 | Forecasts issued under `docs/forecast-protocol.md`, one block per target survey year with issue date, commit and data vintage. **Never overwritten**; rerunning after estimates arrive scores them |
+| `forecast_scores.csv`, `forecast_scores_summary.csv` | 08 | Scores of ledger rows whose estimates exist (empty until the 2025 estimates are added) |
+| `forecast_2025_archived.csv` | archive | Proof-of-concept forecasts for survey 2025 made 2026-10-02 by the earlier script; kept, superseded by the ledger |
 | `forecast_skill_fallback_counts.csv` | 06 | Forecasts that fell back to climatology because a predictor was missing |
 | `env_coverage_by_station.csv`, `env_coverage_by_year.csv` | 09 | Station classes, distances, record lengths; months per year per source |
 | `env_legacy_idw_station_eras.csv` | 09 | Mean offset of the legacy blended series from the homogenised anomaly by beach and dominant station |

@@ -26,6 +26,7 @@ FIG_CAPTIONS <- c(
   fig_window_scan_pre = "Exploratory window scan for pre-recruits: detrended r of every 1-4 month window with the coastwide year-class index; outlined cells would pass family-wise control.",
   fig_window_scan_rec = "Exploratory window scan for recruits (same conventions).",
   fig_forecast_skill = "Rolling-origin forecast skill versus climatology: leaky vs honest predictor selection, persistence, stock carry-over.",
+  fig_forecast_skill_cohort = "Year-class pre-recruits: out-of-sample skill of the exploratory predictor search (honest vs leaky selection) against trend and a priori models.",
   fig_env_coverage = "Coverage of every environmental source by year-month; the clam survey period is boxed.",
   fig_legacy_idw_vs_homogenized = "The legacy notebook's station-blended beach temperature (points, coloured by dominant station) against the homogenised regional anomaly (line).",
   fig_sst_homogenization = "The regional SST anomaly under four constructions, with +/- 2 SE of the pipeline series.",
@@ -54,13 +55,21 @@ TAB_DESCRIPTIONS <- c(
   confirmatory_beuti_robustness = "BEUTI and CUTI under alternative detrending, first differences, leave-one-out, without the most influential year",
   confirmatory_predictor_correlations = "Correlations among predictors and with year",
   window_scan_summary = "Window-scan totals and null thresholds",
-  window_scan_best_per_variable = "Best window per variable with naive, BH and family-wise p",
+  window_scan_best_per_variable = "Best window per variable with naive, BH and family-wise p, raw r and r with year",
+  window_scan_top10 = "The ten strongest windows per response (the exploratory ranking of predictors)",
+  window_scan_trend_attribution = "Strongest undetrended window per series: how much is trend (r with year) and what remains after detrending",
   window_scan_all = "All scanned windows (sorted by naive p)",
   forecast_skill_original_framework = "Skill vs climatology, original response definition",
   forecast_skill_original_by_series = "Skill by beach x size class",
-  forecast_skill_cohort_framework = "Skill of trend, BEUTI and trend+BEUTI models for year-class pre-recruits",
+  forecast_skill_cohort_framework = "Skill of trend, a priori BEUTI and exploratory (honest and leaky) models for year-class pre-recruits",
+  forecast_skill_cohort_selections = "Which series and window the honest search chose at each training origin",
+  forecast_selection_stability = "How often each series was chosen across training origins",
+  forecast_skill_cohort_fallback_counts = "Cohort-framework forecasts that fell back to climatology",
   forecast_skill_fallback_counts = "Forecasts that fell back to climatology for lack of a predictor",
-  forecast_2025_archived = "Archived forecasts for the 2025 survey (made before the estimates were available)",
+  forecast_2025_archived = "Proof-of-concept forecasts for the 2025 survey archived on 2026-10-02 (superseded by the ledger)",
+  forecast_ledger = "Forecasts issued under docs/forecast-protocol.md, one block per target survey year, never overwritten",
+  forecast_scores = "Scores of ledger rows whose target estimates have arrived (empty until then)",
+  forecast_scores_summary = "Mean absolute error, interval coverage, CRPS and skill by target and model",
   env_coverage_by_station = "Temperature and salinity stations: class, distance to nearest beach, record length",
   env_coverage_by_year = "Months of data per year for each environmental source",
   env_legacy_idw_station_eras = "Mean difference between the legacy blended series and the homogenised anomaly, by beach and dominant station",
@@ -157,9 +166,24 @@ safe({
   }
 })
 safe({
-  ws <- get_tab("window_scan_summary")
-  if (!is.null(ws)) add("- **Exploratory window scan.** ", sum(ws$n_windows), " windows tested; ",
-                        sum(ws$n_fwer_sig), " pass family-wise control.")
+  ws <- get_tab("window_scan_summary"); top <- get_tab("window_scan_top10")
+  if (!is.null(ws)) {
+    line <- paste0("- **Calibrated search over every series and window.** ", sum(ws$n_windows), " windows tested; ",
+                   sum(ws$n_fwer_sig), " pass family-wise control (95th percentile of the null max |r|: ",
+                   paste(sprintf("%s %.2f", ws$response, ws$null_max_abs_r_95), collapse = ", "), ").")
+    if (!is.null(top)) { b <- top %>% group_by(response) %>% slice(1) %>% ungroup()
+      line <- paste0(line, " Strongest windows: ", paste(sprintf("%s: %s %s (r = %s, family-wise p = %s)", b$response, b$var, b$window,
+                                                                  r2(b$r), r2(b$p_fwer)), collapse = "; "), ".") }
+    add(line)
+  }
+  sk <- get_tab("forecast_skill_cohort_framework"); st <- get_tab("forecast_selection_stability")
+  if (!is.null(sk)) { a <- sk %>% filter(series == "All beaches"); g <- function(m) r2(a$skill_vs_climatology[a$model == m])
+    add("- **Out-of-sample skill of the search (year-class pre-recruits, vs climatology).** Honest selection ", g("honest_scan"),
+        "; leaky selection ", g("leaky_scan"), "; trend + BEUTI (a priori) ", g("trend_beuti"), "; trend alone ", g("trend"),
+        if (!is.null(st)) paste0(". The honest search chose ", st$var[1], " at ", st$n_origins_selected[1], " of ",
+                                 sum(st$n_origins_selected), " training origins") else "", ".") }
+  em <- tryCatch(readr::read_csv(file.path(DERIVED, "env_monthly.csv"), show_col_types = FALSE), error = function(e) NULL)
+  if (!is.null(em) && "index_vintage" %in% names(em)) add("- **Index vintage.** BEUTI/CUTI/PDO: ", em$index_vintage[1], " (see env_index_vintages).")
 })
 safe({
   fs <- get_tab("forecast_skill_original_framework")

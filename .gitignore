@@ -12,3 +12,4 @@
 # Raw download caches of the acquire scripts (regenerable; the monthly CSVs beside them are committed)
 02_data/Environmental Data/external/raw/
 03_analyses/robust-reanalysis-vintage-current/
+03_analyses/robust-reanalysis-vintage-cached/

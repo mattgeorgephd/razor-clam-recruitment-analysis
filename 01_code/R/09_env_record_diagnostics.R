@@ -303,13 +303,19 @@ st_par <- fit_all$station %>%
 write_tab(st_par, "env_sst_station_parameters")
 
 # ═══ (E) BEUTI / CUTI homogeneity ════════════════════════════════════════════
-read_idx <- function(f) read_csv(file.path(ENV_DIR, f), show_col_types = FALSE) %>%
-  filter(month %in% 5:8) %>%
+# (E) uses the pipeline's vintage (INDEX_VINTAGE, as 01_build_datasets.R); the
+# cached snapshot enters only in (F), where the two are compared.
+primary_index_file <- function(idx) {
+  if (INDEX_VINTAGE == "cached") return(file.path(ENV_DIR, paste0(idx, "_daily.csv")))
+  tail(sort(list.files(file.path(ENV_DIR, "external"), sprintf("^%s_daily_\\d{4}-\\d{2}-\\d{2}\\.csv$", idx), full.names = TRUE)), 1)
+}
+read_idx <- function(f) read_csv(f, show_col_types = FALSE) %>%
+  filter(month %in% 5:8, year <= 2025) %>%
   pivot_longer(matches("^\\d+N$"), names_to = "lat") %>%
   group_by(year, lat) %>% summarise(v = mean(value, na.rm = TRUE), n = n(), .groups = "drop") %>%
   filter(n >= 100)
-beuti_ann <- read_idx("BEUTI_daily.csv") %>% rename(beuti = v) %>% select(-n)
-cuti_ann  <- read_idx("CUTI_daily.csv")  %>% rename(cuti = v)  %>% select(-n)
+beuti_ann <- read_idx(primary_index_file("BEUTI")) %>% rename(beuti = v) %>% select(-n)
+cuti_ann  <- read_idx(primary_index_file("CUTI"))  %>% rename(cuti = v)  %>% select(-n)
 idx_ann <- beuti_ann %>% inner_join(cuti_ann, by = c("year", "lat")) %>%
   mutate(ratio = beuti / cuti, lat_num = as.numeric(sub("N", "", lat)))
 
@@ -353,7 +359,7 @@ p_beuti <- idx_ann %>% filter(lat %in% c("46N", "47N")) %>%
   facet_wrap(~ name, ncol = 1, scales = "free_y") +
   scale_colour_manual(values = c(`46N` = "#0072B2", `47N` = "#D55E00"), name = NULL) +
   labs(x = NULL, y = "May-Aug mean",
-       title = "Upwelling indices at 46N and 47N: level shift at the 2010/2011 product boundary?",
+       title = paste0("Upwelling indices at 46N and 47N (", INDEX_VINTAGE, " vintage): level shift at the 2010/2011 product boundary?"),
        subtitle = "Dashed line: end of the historical reanalysis period of the source model (to verify with the index authors).") +
   theme_ms(9)
 save_fig(p_beuti, "fig_beuti_homogeneity", 8, 7.5)

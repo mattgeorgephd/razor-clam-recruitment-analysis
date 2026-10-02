@@ -66,14 +66,15 @@ STATION_CLASS <- c(
 SST_OPEN_COAST <- c("46029", "46041", "46211", "46099", "46100", "46248", "46119", "46010")
 SST_MIN_STATION_MONTHS <- 24  # stations with shorter records cannot get a climatology
 
-# Which vintage of BEUTI/CUTI and the PDO feeds the pre-specified predictors.
-#   "cached"  (default) the snapshots in 02_data/Environmental Data (BEUTI/CUTI
-#             to 2025-04; PDO as cached by the notebook), i.e. the manuscript numbers
-#   "current" the files fetched by acquire/fetch_climate_indices.R into
-#             external/ (BEUTI/CUTI daily <date> files; PDO from NCEI)
+# Which vintage of BEUTI/CUTI and the PDO feeds the predictors.
+#   "current" (default since 2026-10-02, owner decision, task T35) the files
+#             fetched by acquire/fetch_climate_indices.R into external/
+#             (BEUTI/CUTI daily <date> files; PDO from NCEI)
+#   "cached"  the earlier snapshots in 02_data/Environmental Data (BEUTI/CUTI
+#             to 2025-04; PDO as cached by the notebook), kept for comparison
 # The two differ throughout the record (see 09_env_record_diagnostics.R, F).
-# run_all.R --vintage=current sets this.
-INDEX_VINTAGE <- match.arg(Sys.getenv("RC_INDEX_VINTAGE", unset = "cached"), c("cached", "current"))
+# run_all.R --vintage=cached sets the other.
+INDEX_VINTAGE <- match.arg(Sys.getenv("RC_INDEX_VINTAGE", unset = "current"), c("cached", "current"))
 
 SEED <- 20261002
 # Surrogate series for permutation / null calibration. run_all.R --fast sets

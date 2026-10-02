@@ -206,7 +206,7 @@ The cached `BEUTI_daily.csv` and `CUTI_daily.csv` end in April 2025. The files o
 | Mean 1988–2024 | 1.25 | 1.55 |
 | Trend per decade | +0.76 | +1.07 |
 | Level shift at 2010/2011 after trend (p) | +0.18 (0.65) | **+1.07 (0.022)** |
-| Best single break year | 2010 | 2010 |
+| Best single break year | 2006 | 2013 |
 | Winter CUTI (Nov–Feb) mean | −0.34 | about 0.1 higher throughout, same shape |
 
 The level shift at the reanalysis boundary that was absent in the cached vintage is present in the current one at 47N (not at 46N: +0.06, p = 0.86). This strengthens the case for asking the authors directly (option F) and is the main open question about the index.
@@ -228,6 +228,8 @@ The PDO cache matches neither NCEI's current ERSST v5 file nor NOAA PSL's: month
 | Window scan: windows passing family-wise control | 0 of 1,380 | 0 of 1,380 |
 
 The association keeps its sign and size under the current vintage; its precision falls (the current series is more variable in 2014–2024), so the Holm-corrected coastwide p moves from 0.013 to 0.052 and the primary pooled test from 0.052 to 0.11. Honest reporting therefore has to carry both: "modest, negative, borderline after multiplicity correction, and dependent on which vintage of the index is used". The null results for CUTI-winter and PDO do not depend on the vintage or the PDO source.
+
+**Decision (owner, 2026-10-02, task T35): the current vintage is the primary.** `INDEX_VINTAGE` defaults to `current`; the pipeline's main outputs and the manuscript now carry the current-vintage numbers, with the cached-vintage numbers as the sensitivity (`./run_pipeline.sh --vintage=cached --out=DIR`). The 2010/2011 level shift at 47N in the current vintage (+1.07, p = 0.022) is therefore a property of the primary series and is stated as such; the trend-robust tests (detrending, first differences) are the ones to lean on.
 
 ### 6.2 Satellite SST agrees with the buoys, least in summer
 

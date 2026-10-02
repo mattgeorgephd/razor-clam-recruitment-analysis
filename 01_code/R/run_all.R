@@ -13,10 +13,10 @@
 #   Rscript 01_code/R/run_all.R --steps=04,10  only these steps, in this order
 #   Rscript 01_code/R/run_all.R --from=05      this step and every later one
 #   Rscript 01_code/R/run_all.R --out=DIR      write outputs to DIR (absolute, or relative to root)
-#   Rscript 01_code/R/run_all.R --vintage=current
-#                                              use the current BEUTI/CUTI/PDO files in
-#                                              02_data/Environmental Data/external/ instead of
-#                                              the cached snapshots (see 00_config.R); pair it
+#   Rscript 01_code/R/run_all.R --vintage=cached
+#                                              use the cached BEUTI/CUTI/PDO snapshots instead of
+#                                              the current files in 02_data/Environmental Data/
+#                                              external/ (the default; see 00_config.R); pair it
 #                                              with --out=DIR to keep the main outputs intact
 #   Rscript 01_code/R/run_all.R --no-report    skip the report step
 #   Rscript 01_code/R/run_all.R --notebook     also run the legacy notebook afterwards (~15 min,
@@ -36,7 +36,7 @@ STEPS <- data.frame(
   id   = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10"),
   file = c("01_build_datasets.R", "02_cohort_diagnostics.R", "03_null_audit.R",
            "04_confirmatory_models.R", "05_window_scan.R", "06_forecast_skill.R",
-           "07_figures_overview.R", "08_forecast_2025.R",
+           "07_figures_overview.R", "08_forecast_protocol.R",
            "09_env_record_diagnostics.R", "10_report.R"),
   what = c("Parse raw inputs; derived tables; pre-specified cohort-aligned predictors",
            "Survey timing, length-frequency, cohort linkage, synchrony, trends",
@@ -45,7 +45,7 @@ STEPS <- data.frame(
            "Exploratory window scan with family-wise calibration",
            "Rolling-origin forecast skill (leaky vs honest selection, carry-over)",
            "Study-area map, abundance and predictor time series",
-           "Archive forecasts for the 2025 survey (never overwritten)",
+           "Issue forecasts for the next survey under docs/forecast-protocol.md; score the ledger",
            "Environmental-record coverage and homogeneity diagnostics",
            "Compile all figures and tables into report.md / report.html"),
   stringsAsFactors = FALSE)
@@ -107,7 +107,7 @@ dir.create(out, recursive = TRUE, showWarnings = FALSE)
 Sys.setenv(RC_OUT_DIR = out)
 if (flag("fast")) Sys.setenv(RC_N_SURROGATES = "200")
 n_surr <- Sys.getenv("RC_N_SURROGATES", unset = "2000")
-vintage <- value("vintage", Sys.getenv("RC_INDEX_VINTAGE", unset = "cached"))
+vintage <- value("vintage", Sys.getenv("RC_INDEX_VINTAGE", unset = "current"))
 if (!vintage %in% c("cached", "current")) stop("--vintage must be 'cached' or 'current'")
 Sys.setenv(RC_INDEX_VINTAGE = vintage)
 

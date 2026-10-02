@@ -13,3 +13,7 @@ Changes between versions, from a `diff` review on 2026-10-02:
 | 6 → 7 | Figure sizing and dpi changes. Added §24d-ix ("experienced life stage") and §24d-x (lag-0 concurrent conditions) |
 
 Nothing analytical in versions 2–6 is missing from version 7. The only things not carried forward are the v4 toggle settings (min temp and CUTI on) and older figure sizes.
+
+## `08_forecast_2025_proof_of_concept.R`
+
+The first version of the forecast step (2026-10-02, morning). It wrote `03_analyses/robust-reanalysis/tables/forecast_2025_archived.csv` once and refused to overwrite it. Superseded the same day by `01_code/R/08_forecast_protocol.R` and `docs/forecast-protocol.md`; the archived CSV is kept and will be scored alongside the ledger.
