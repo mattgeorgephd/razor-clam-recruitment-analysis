@@ -14,14 +14,14 @@ This repository analyzes Washington coast Pacific razor clam (*Siliqua patula*) 
 
 | Path | Status | Use it for |
 |---|---|---|
-| `01_code/R/` (`run_all.R` → scripts `01`–`10`) | **Primary.** Reproducible, ~2 min, deterministic (seed in `00_config.R`) | Anything that goes into the manuscript |
+| `01_code/R/` (`run_all.R` → scripts `01`, `01b`, `02`–`10`) | **Primary.** Reproducible, ~8 min (the length mixtures in `01b` and the four-response window scan take most of it), deterministic (seed in `00_config.R`) | Anything that goes into the manuscript |
 | `01_code/R/acquire/` | Fetch scripts for external products (satellite SST, buoy winds/waves, lower-river discharge, current index vintages). Run 2026-10-02; outputs committed in `02_data/Environmental Data/external/` | Refreshing or extending the environmental record (see `docs/environmental-record-options.md`) |
 | `01_code/razor-clam-recruitment-analysis.Rmd` | Legacy exploratory notebook (8,400 lines). Bug-fixed 2026-10 but methodologically superseded | Reproducing or explaining earlier figures |
 | `01_code/archive/*.Rmd` | Frozen earlier versions (2–6) of the notebook | Nothing; history only |
 
 ## Running
 
-- **Full pipeline:** from the repo root, `./run_pipeline.sh` (or `Rscript 01_code/R/run_all.R`; same flags). It rebuilds `02_data/derived/` and `03_analyses/robust-reanalysis/`, appends to `run_log.txt`, and compiles every figure and table into `03_analyses/robust-reanalysis/report.md` (+ `report.html` when pandoc is found). Flags: `--fast` (200 surrogates, ~1 min, writes to the git-ignored `robust-reanalysis-fast/`), `--steps=04,10`, `--from=05`, `--out=DIR`, `--no-report`, `--notebook`, `--install`, `--list`.
+- **Full pipeline:** from the repo root, `./run_pipeline.sh` (or `Rscript 01_code/R/run_all.R`; same flags). It rebuilds `02_data/derived/` and `03_analyses/robust-reanalysis/`, appends to `run_log.txt`, and compiles every figure and table into `03_analyses/robust-reanalysis/report.md` (+ `report.html` when pandoc is found). Flags: `--fast` (200 surrogates, ~5 min, writes to the git-ignored `robust-reanalysis-fast/`), `--steps=04,10`, `--from=05`, `--out=DIR`, `--no-report`, `--notebook`, `--install`, `--list`.
 - **Single script:** scripts can be run individually (`Rscript 01_code/R/04_confirmatory_models.R`) once `01_build_datasets.R` has run; or `./run_pipeline.sh --steps=04,10` to refresh the report too.
 - **Before committing results:** run the full (non-fast) pipeline so the committed tables and figures reflect 2,000 surrogates.
 - **Notebook:** knit from RStudio (project root), or `Rscript -e 'knitr::purl("01_code/razor-clam-recruitment-analysis.Rmd")'` and run the resulting `.R` from the repo root. It writes to `03_analyses/<YYYYMMDD>-recruitment-analysis/`. Run it in a scratch copy unless you intend to commit new outputs; one run writes ~150 PNGs, some at 1000 dpi.
@@ -36,8 +36,11 @@ This repository analyzes Washington coast Pacific razor clam (*Siliqua patula*) 
 - **Survey timing differs by beach and over time.** Median dates: Long Beach about 6 Jun, Copalis about 16 Jun (Apr–May in 1997–99), Mocrocks about 18 Jul, Kalaloch about 24 Jul, Twin Harbors about 9 Aug. See `03_analyses/robust-reanalysis/tables/survey_timing_by_beach.csv`.
 - **Size classes, not ages.** Pre-recruits are <76 mm, recruits ≥76 mm.
   - At June surveys, pre-recruits are mostly the *previous* year's settlement (modal length 41–43 mm at the June beaches, 60–64 mm at the August beaches; `tables/growth_model_check.csv`).
-  - Current-year settlers (≤20 mm) appear only in surveys after mid-July.
-  - Do not call pre-recruits "young-of-year spawned in the survey year". With the WDFW growth curve placed on the age axis (t0 ≈ 0.4–0.5 yr), 76 mm is reached at about 1.1–1.3 yr, in the autumn after the first survey; at the August surveys (Twin Harbors) the fast tail of the year-old cohort is already above 76 mm in about half of the years (task T14).
+  - Current-year settlers (10–27 mm) appear only in surveys from July; they are about a quarter of the pre-recruit class at those surveys.
+  - Do not call pre-recruits "young-of-year spawned in the survey year". With the WDFW growth curve placed on the age axis (t0 ≈ 0.4–0.5 yr), 76 mm is reached at about 1.1–1.3 yr, in the autumn after the first survey.
+  - **76 mm cuts through the year-old cohort at every beach.** The year-old cohort spans about 20–95 mm (a slow 20–30 mm group, the main mode, and a fast tail at 77–90 mm); tracking length groups across consecutive surveys shows the 76–95 mm clams at the June and July surveys belong to the same year class as the 25–75 mm clams (`tables/cohort_length_transitions.csv`). On average a quarter of the year-old cohort is above 76 mm (Twin Harbors 0.42, Kalaloch 0.08), and a third of the "recruit" class is year-old clams (`tables/cohort_separation_summary.csv`; task T14).
+  - **Length-based year classes** exist beside the size classes: `01b_cohort_separation.R` fits a growth-curve-informed normal mixture (`lib_cohort_mixture.R`) to every beach-year's lengths and applies the cohort shares to total abundance. `cohort_table.csv` carries `yc1_next` (year-old cohort of year class Y at survey Y+1), `yc2_next2` (two-year-olds at Y+2), `yc0_settlers` and their logs; `02_data/derived/cohort_lengths.csv` has every fit. Steps 04, 05 and 06 use them as a labelled sensitivity arm, never as the primary response (the size classes are what WDFW publishes and what the forecast protocol targets).
+  - **Kalaloch grows about half as fast** as the Copalis curve at a given length (annual increment at 55 mm about 31 mm against 56 mm; `tables/cohort_growth_increments_summary.csv`), so its two-year-olds straddle 76 mm. The mixture uses K = 0.43 and no fast-tail component there (`MIX_K`, `MIX_T0`, `MIX_FAST_TAIL` in `00_config.R`); the WDFW curve, which year-class tracking corroborates at Copalis and Long Beach (K 1.02 against 1.00/0.98), is used at the four southern beaches. Do not apply the Copalis curve to Kalaloch.
 - **Year class Y** (spawned summer Y) is counted as pre-recruits at survey Y+1 and mostly as recruits at Y+2. Define predictors relative to Y, not to the survey year.
 - **Abundance** = density × `habitat_m2`, and habitat area changes in steps. Density is precomputed in `02_data/derived/survey_beach_year.csv`.
 - **Kalaloch** mixes WDFW, Quinault and Olympic National Park survey data and behaves differently from the other beaches. Always show results with and without it.
@@ -79,8 +82,9 @@ The analysis is **exploratory by design** (owner decision 2026-10-02): its aim i
   5. Update the manuscript methods and `task.md`.
 - **Add a survey year:**
   1. Append rows to the season summary and shell-length workbooks (same columns).
-  2. Run `run_all.R`.
+  2. Run `run_all.R` (the new beach-years get mixture fits in `01b`; check `separation_flag_next` in `cohort_table.csv` and the KS distance in `tables/cohort_separation_by_year.csv`).
   3. Compare with any pre-registered forecast (task T15) *before* refitting models.
+- **Change the length mixture** (priors, components, growth constants): edit `lib_cohort_mixture.R` or the `MIX_*` constants, rerun `--steps=01b,02` and check three things before anything else: the KS distances, the length-based cohort linkage against the size-class linkage (`tables/cohort_linkage.csv`, `r_age1_t_age2_t1` vs `r_pre_t_rec_t1`), and the example fits (`fig_cohort_mixture_examples.png`). The linkage is the out-of-model check: the mixture never sees abundance covariance across years.
 - **Check a number in the manuscript:** search for it in `03_analyses/robust-reanalysis/tables/*.csv`. If it is not there, it should not be in the manuscript.
 - **Add an external environmental product:** write a fetch script in `01_code/R/acquire/` that caches `external/<name>_monthly.csv` plus a provenance file; rerun the pipeline; add the new column to the variant list in `09_env_record_diagnostics.R` (C) if it is an SST product and to `EXT_SERIES` (A) for the coverage figure; declare any predictor built from it as a new pre-specified family.
 - **Refresh the external products:** on a networked machine, delete the relevant files in `external/raw/` and rerun the `acquire/` script; commit the new monthly CSV and provenance file; rerun `./run_pipeline.sh`.

@@ -16,9 +16,11 @@
 #   adjustment across the 5 predictors x 2 responses; Wald 95% CIs.
 # Sensitivity: (i) no trend term; (ii) excluding Kalaloch; (iii) coastwide
 #   index (mean of beach-standardised residuals) with GLS-AR(1); (iv) beach-
-#   specific GLS-AR(1) fits for heterogeneity.
+#   specific GLS-AR(1) fits for heterogeneity; (vi) the length-based year
+#   classes of 01b_cohort_separation.R (log_yc1_next, log_yc2_next2) in place
+#   of the 76 mm size classes (task T14).
 # Outputs: tables/confirmatory_*.csv, figures/fig_confirmatory_forest.png,
-#          figures/fig_beach_heterogeneity.png
+#          figures/fig_beach_heterogeneity.png, fig_confirmatory_lengthbased.png
 
 source(here::here("01_code", "R", "00_config.R"))
 suppressPackageStartupMessages(library(lme4))
@@ -30,6 +32,10 @@ PREDICTORS <- c(beuti_larval = "BEUTI, May-Aug (Y)",
                 cuti_winter  = "CUTI, Nov (Y)-Feb (Y+1)")
 RESPONSES  <- c(log_pre_next = "Pre-recruits at survey Y+1",
                 log_rec_next2 = "Recruits at survey Y+2")
+# length-based year classes (sensitivity vi): the year-old cohort at survey Y+1
+# and the two-year-olds at survey Y+2, from the length mixture of 01b
+RESPONSES_LB <- c(log_yc1_next = "Year-old cohort at survey Y+1 (length-based)",
+                  log_yc2_next2 = "Two-year-olds at survey Y+2 (length-based)")
 
 survey <- read_csv(file.path(DERIVED, "survey_beach_year.csv"), show_col_types = FALSE)
 cohort <- read_csv(file.path(DERIVED, "cohort_table.csv"), show_col_types = FALSE) %>%
@@ -49,7 +55,7 @@ predictor_cor <- cohort %>% filter(beach == "Copalis", year_class %in% 1996:2023
 write_tab(as_tibble(predictor_cor, rownames = "var"), "confirmatory_predictor_correlations")
 
 model_data <- function(resp, drop_kalaloch = FALSE) {
-  doy <- if (resp == "log_pre_next") "doy1_c" else "doy2_c"
+  doy <- if (resp %in% c("log_pre_next", "log_yc1_next")) "doy1_c" else "doy2_c"
   d <- cohort %>%
     filter(!is.na(.data[[resp]]), !is.na(spawn_c), !is.na(.data[[doy]])) %>%
     mutate(y = .data[[resp]], doy_c = .data[[doy]], yc = factor(year_class))
@@ -105,7 +111,7 @@ write_tab(full_fit, "confirmatory_full_model")
 # Within each beach, regress the response on spawners + survey date, take
 # standardised residuals, average across beaches per year class, then fit
 # GLS with AR(1) errors: index ~ trend + predictor.
-coast <- map_dfr(names(RESPONSES), function(resp) {
+coast_fit <- function(resps) map_dfr(resps, function(resp) {
   d <- model_data(resp) %>%
     group_by(beach) %>%
     mutate(res = zs(resid(lm(y ~ spawn_c + doy_c)))) %>%
@@ -122,7 +128,8 @@ coast <- map_dfr(names(RESPONSES), function(resp) {
            estimate = tt["x", 1], se = tt["x", 2], p = tt["x", 4],
            phi = tryCatch(coef(f$modelStruct$corStruct, unconstrained = FALSE), error = function(e) NA_real_))
   })
-}) %>% mutate(p_holm = p.adjust(p, "holm"))
+})
+coast <- coast_fit(names(RESPONSES)) %>% mutate(p_holm = p.adjust(p, "holm"))
 write_tab(coast, "confirmatory_coastwide_index")
 
 # ── Robustness of the BEUTI result (sensitivity v) ──────────────────────────
@@ -173,6 +180,50 @@ by_beach <- map_dfr(names(RESPONSES), function(resp) {
   }))
 }) %>% mutate(q_bh = p.adjust(p, "BH"))
 write_tab(by_beach, "confirmatory_by_beach")
+
+# ── Length-based year classes (sensitivity vi; task T14) ────────────────────
+# The same pre-specified tests with the year-old cohort at survey Y+1 and the
+# two-year-olds at survey Y+2 from the length mixture as responses (settler-
+# free, and including the fast part of the year-old cohort that is above 76 mm).
+# Holm is applied within this sensitivity set (5 predictors x 2 responses), as
+# in the primary analysis; the spawner covariate stays the 76 mm recruit class.
+has_lb <- all(names(RESPONSES_LB) %in% names(cohort)) && any(!is.na(cohort$log_yc1_next))
+if (!has_lb) {
+  message("04: length-based responses not in cohort_table.csv (run 01b first); sensitivity (vi) skipped")
+} else {
+  res_lb <- expand_grid(response = names(RESPONSES_LB), predictor = names(PREDICTORS), trend = TRUE, drop_kalaloch = c(FALSE, TRUE)) %>%
+    pmap_dfr(function(response, predictor, trend, drop_kalaloch) fit_one(response, predictor, trend, drop_kalaloch)) %>%
+    group_by(drop_kalaloch) %>% mutate(p_holm = p.adjust(p_lrt, "holm"), p_bh = p.adjust(p_lrt, "BH")) %>% ungroup() %>%
+    mutate(analysis = ifelse(drop_kalaloch, "Length-based cohorts, excluding Kalaloch", "Length-based cohorts (trend + spawners + survey date)"))
+  write_tab(res_lb, "confirmatory_pooled_lengthbased")
+  coast_lb <- coast_fit(names(RESPONSES_LB)) %>% mutate(p_holm = p.adjust(p, "holm"))
+  write_tab(coast_lb, "confirmatory_coastwide_lengthbased")
+  # side by side: the size-class response and its length-based counterpart
+  TARGET <- c(log_pre_next = "Year class Y at survey Y+1", log_yc1_next = "Year class Y at survey Y+1",
+              log_rec_next2 = "Year class Y at survey Y+2", log_yc2_next2 = "Year class Y at survey Y+2")
+  MEASURE <- c(log_pre_next = "76 mm size class (pre-recruits / recruits)", log_rec_next2 = "76 mm size class (pre-recruits / recruits)",
+               log_yc1_next = "length-based year class", log_yc2_next2 = "length-based year class")
+  cmp <- bind_rows(res %>% filter(trend), res_lb) %>%
+    mutate(target = TARGET[response], measure = MEASURE[response],
+           kalaloch = ifelse(drop_kalaloch, "excluding Kalaloch", "all beaches"),
+           predictor = factor(PREDICTORS[predictor], levels = rev(PREDICTORS)))
+  p_lb <- ggplot(cmp, aes(estimate, predictor, colour = measure, shape = kalaloch)) +
+    geom_vline(xintercept = 0, linetype = 2) +
+    geom_pointrange(aes(xmin = lo, xmax = hi), position = position_dodge(width = 0.7), size = 0.3) +
+    facet_wrap(~ target) +
+    scale_colour_manual(values = c("grey45", "#0072B2"), name = NULL) +
+    scale_shape_manual(values = c(16, 1), name = NULL) +
+    labs(x = "Effect on log abundance per 1 SD of predictor (95% CI)", y = NULL,
+         title = "Pre-specified predictors: 76 mm size classes versus length-based year classes",
+         subtitle = "Pooled mixed models with trend, spawners, survey date and a random year-class effect") +
+    theme_ms(10) + guides(colour = guide_legend(nrow = 1), shape = guide_legend(nrow = 1)) + theme(legend.box = "vertical")
+  save_fig(p_lb, "fig_confirmatory_lengthbased", 9, 4.8)
+  message("04 (vi): BEUTI on the year-old cohort (length-based): ",
+          sprintf("%.2f (Holm p = %.3f)", res_lb$estimate[res_lb$response == "log_yc1_next" & res_lb$predictor == "beuti_larval" & !res_lb$drop_kalaloch],
+                  res_lb$p_holm[res_lb$response == "log_yc1_next" & res_lb$predictor == "beuti_larval" & !res_lb$drop_kalaloch]),
+          " vs pre-recruits: ", sprintf("%.2f (Holm p = %.3f)", res$estimate[res$response == "log_pre_next" & res$predictor == "beuti_larval" & res$trend & !res$drop_kalaloch],
+                                        res$p_holm[res$response == "log_pre_next" & res$predictor == "beuti_larval" & res$trend & !res$drop_kalaloch]))
+}
 
 # ── Figures ─────────────────────────────────────────────────────────────────
 p_forest <- res %>%

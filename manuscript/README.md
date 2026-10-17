@@ -4,7 +4,7 @@ Draft manuscript built on the robust re-analysis.
 
 | File | Contents |
 |---|---|
-| `manuscript.md` | Source of truth: Markdown draft (v0.1, 2026-10-02) with embedded figures and reference list |
+| `manuscript.md` | Source of truth: Markdown draft (v0.3, 2026-10-17) with embedded figures and reference list |
 | `manuscript.docx` | Word rendering for co-authors. Regenerate after editing `manuscript.md`; do not edit the .docx directly |
 
 Regenerate the Word file from this folder with:

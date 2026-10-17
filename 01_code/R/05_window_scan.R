@@ -11,6 +11,10 @@
 # same search finds in surrogate data.
 # Response: coastwide year-class index = mean across beaches of standardised
 # residuals of log abundance on (beach-centred) log spawners and survey date.
+# Four responses: the two 76 mm size classes (pre-recruits at survey Y+1,
+# recruits at Y+2) and, as a sensitivity (task T14), the two length-based year
+# classes of 01b_cohort_separation.R (year-old cohort at Y+1, two-year-olds at
+# Y+2). The ranking of predictors is reported per response.
 # Both response and predictor are linearly detrended (partial correlation on
 # year class). Family-wise error is controlled by comparing every |r| with the
 # distribution of the MAXIMUM |r| over the whole scan obtained from
@@ -40,6 +44,12 @@ indices <- list(
              label = "Pre-recruits of year class Y at survey Y+1"),
   rec = list(idx = make_index("log_rec_next2", "doy_next2"), last_offset = 2,
              label = "Recruits of year class Y at survey Y+2"))
+if (all(c("log_yc1_next", "log_yc2_next2") %in% names(cohort)) && any(!is.na(cohort$log_yc1_next))) {
+  indices$yc1 <- list(idx = make_index("log_yc1_next", "doy_next"), last_offset = 1,
+                      label = "Year-old cohort of year class Y at survey Y+1 (length-based)")
+  indices$yc2 <- list(idx = make_index("log_yc2_next2", "doy_next2"), last_offset = 2,
+                      label = "Two-year-olds of year class Y at survey Y+2 (length-based)")
+} else message("05: length-based responses not in cohort_table.csv (run 01b first); scanned the size classes only")
 
 detr <- function(x, t) { ok <- !is.na(x); out <- rep(NA_real_, length(x)); out[ok] <- resid(lm(x[ok] ~ t[ok])); out }
 

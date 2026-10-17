@@ -15,9 +15,9 @@ Read [`docs/methodology-review.md`](docs/methodology-review.md) §1 for the key 
 
 ```bash
 # from the repository root (R >= 4.3; packages listed in AGENTS.md)
-./run_pipeline.sh                # ~2 min; rebuilds 02_data/derived/ and 03_analyses/robust-reanalysis/,
+./run_pipeline.sh                # ~8 min; rebuilds 02_data/derived/ and 03_analyses/robust-reanalysis/,
                                  # then compiles every figure and table into 03_analyses/robust-reanalysis/report.md (+ .html)
-./run_pipeline.sh --fast         # ~1 min with 200 surrogates, into the git-ignored robust-reanalysis-fast/
+./run_pipeline.sh --fast         # ~5 min with 200 surrogates, into the git-ignored robust-reanalysis-fast/
 ./run_pipeline.sh --list         # steps; --help for all flags (--steps, --from, --out, --vintage, --notebook, --install)
 # Windows: Rscript 01_code/R/run_all.R [flags]
 ```
@@ -43,7 +43,8 @@ The legacy notebook `01_code/razor-clam-recruitment-analysis.Rmd` can still be k
 
 ## Headline results (robust re-analysis)
 
-- **Survey timing.** Survey date differs by about two months among beaches. Pre-recruits counted at June surveys mostly settled the previous summer, so year-class alignment matters. WDFW's mark-recapture growth curve, once placed on the age axis with the survey length data (t0 about 0.4–0.5 yr), puts the 76 mm boundary at 1.1–1.3 yr and confirms the alignment, except that at the August surveys the fast tail of the year-old cohort is already above it.
+- **Survey timing.** Survey date differs by about two months among beaches. Pre-recruits counted at June surveys mostly settled the previous summer, so year-class alignment matters. WDFW's mark-recapture growth curve, once placed on the age axis with the survey length data (t0 about 0.4–0.5 yr), puts the 76 mm boundary at 1.1–1.3 yr and confirms the alignment.
+- **Size classes are not year classes.** Tracking length groups across consecutive surveys shows that the year-old cohort spans about 20–95 mm, so 76 mm cuts through it at every beach: a quarter of the cohort is above 76 mm on average (Twin Harbors 0.42) and a third of the "recruit" class is year-old clams. A growth-curve-informed length mixture (`01b_cohort_separation.R`) now separates settlers, year-olds, two-year-olds and older clams for every beach-year; the length-based year-old cohort at survey t predicts the two-year-olds at t+1 at all five beaches (r 0.48–0.86), where the size classes fail at Twin Harbors. The same tracking reproduces WDFW's growth K at the two study beaches and shows Kalaloch growing about half as fast, so Kalaloch has its own curve (`docs/growth-model-review.md` §3b). The length-based year classes are a sensitivity arm beside the size classes in every analysis.
 - **The original screen.** The original analysis computed about 7,000 correlations; its monthly screen is not distinguishable from an autocorrelation-preserving null (global p = 0.07; 4/900 cells pass FDR). Its apparent forecast skill disappears when predictor selection is done inside cross-validation (skill vs climatology: +0.31 → −0.20).
 - **A priori tests.** Of five cohort-aligned predictors, only larval-season upwelling (BEUTI, May–Aug) is associated with year-class strength, and *negatively*; on the current vintage of the index it is borderline after multiplicity correction (coastwide Holm p = 0.05), modest, and without forecast skill.
 - **Exploratory search.** Across every environmental series (upwelling indices, buoy and satellite SST, PDO, winds, waves, three river gauges) and every 1–4 month window, no window passes family-wise control, and choosing the best predictor honestly inside each training window gives worse forecasts than climatology. The strongest in-sample signals are upwelling in the year *before* spawning, with the opposite sign to the a priori window.

@@ -13,12 +13,18 @@ Outputs of `./run_pipeline.sh` (`01_code/R/run_all.R`). Do not edit by hand; rer
 | `fig_length_frequency.png` | 02 | Length-frequency by beach and survey timing (settler mode only in late surveys) |
 | `fig_cohort_linkage.png` | 02 | log pre-recruits(t) vs log recruits(t+1) |
 | `fig_growth_curve_check.png` | 02 | Modal length of the year-old cohort by survey date vs the WDFW growth curve with t0 = 0 and with t0 fitted |
+| `fig_growth_increments.png` | 02 | Annual growth increments from year-class tracking (10 mm bins across consecutive surveys) vs the WDFW curve and the curve used by the mixture; Kalaloch grows about half as fast |
+| `fig_cohort_mixture_examples.png` | 02 | One typical survey per beach: measured lengths, fitted year-class components, cohort boundaries, the 76 mm line |
+| `fig_cohort_separation_boundaries.png`, `fig_cohort_separation_shares.png` | 02 | Fitted cohort boundaries by survey date against 76 mm; share of each size class belonging to another year class |
+| `fig_cohort_linkage_lengthbased.png` | 02 | log year-old cohort(t) vs log two-year-olds(t+1), length-based |
+| `fig_yearclass_abundance.png` | 02 | The 76 mm size classes beside the length-based year classes by beach and survey year |
 | `fig_null_audit.png` | 03 | Observed max\|r\| from the original 90-cell screen vs 2,000 phase-randomized surrogates |
 | `fig_confirmatory_forest.png` | 04 | Pre-specified predictor effects (pooled LMM; primary, no-Kalaloch, no-trend) |
 | `fig_beach_heterogeneity.png` | 04 | Beach-specific GLS-AR(1) effects |
-| `fig_window_scan_pre.png`, `fig_window_scan_rec.png` | 05 | Exploratory window scan over every environmental series; outlined cells would pass family-wise control (none do) |
+| `fig_confirmatory_lengthbased.png` | 04 | Pre-specified effects with the 76 mm size classes and with the length-based year classes as responses |
+| `fig_window_scan_pre.png`, `fig_window_scan_rec.png`, `fig_window_scan_yc1.png`, `fig_window_scan_yc2.png` | 05 | Exploratory window scan over every environmental series for the two size classes and the two length-based year classes; outlined cells would pass family-wise control (none do) |
 | `fig_forecast_skill.png` | 06 | Out-of-sample skill (original framework): leaky vs honest selection, persistence, carry-over |
-| `fig_forecast_skill_cohort.png` | 06 | Out-of-sample skill (year-class framework): honest vs leaky selection from the full catalogue against trend and a priori models |
+| `fig_forecast_skill_cohort.png`, `fig_forecast_skill_cohort_lengthbased.png` | 06 | Out-of-sample skill (year-class framework): honest vs leaky selection from the full catalogue against trend and a priori models, for pre-recruits and for the length-based year-old cohort |
 | `fig_env_coverage.png` | 09 | Month-by-month coverage of every environmental source |
 | `fig_legacy_idw_vs_homogenized.png` | 09 | Legacy station-blended beach temperature vs the homogenised regional anomaly |
 | `fig_sst_homogenization.png` | 09 | Regional SST anomaly under six constructions (buoys, OISST, MUR), with +/- 2 SE |
@@ -32,8 +38,12 @@ Outputs of `./run_pipeline.sh` (`01_code/R/run_all.R`). Do not edit by hand; rer
 |---|---|---|
 | `survey_timing_by_beach.csv` | 02 | Median and SD of survey day of year; trend (days per year) |
 | `prerecruit_lt30_share_by_timing.csv` | 02 | Share of pre-recruits <20 mm and <30 mm by survey-timing class |
-| `cohort_linkage.csv` | 02 | r(pre_t, rec_t+1), r(pre_t, rec_t), r(rec_t, rec_t+1), r(pre_t, pre_t+1) by beach |
+| `cohort_linkage.csv` | 02 | r(pre_t, rec_t+1), r(pre_t, rec_t), r(rec_t, rec_t+1), r(pre_t, pre_t+1) by beach, and the length-based linkage r(year-olds_t, two-year-olds_t+1), r(two-year-olds_t, older_t+1), r(settlers_t, year-olds_t+1) |
 | `growth_model_check.csv`, `growth_model_check_by_year.csv` | 02 | The WDFW growth curve placed on the age axis: implied t0 by beach and beach-year, age at 76 mm, expected cohort lengths at surveys Y+1 and Y+2 |
+| `cohort_length_transitions.csv`, `cohort_length_transitions_by_beach.csv` | 02 | Correlations of log numbers in five length groups (5–24, 25–75, 76–95, 96–125, 126+ mm) with the same survey and the two previous surveys of the same beach, pooled by survey timing and per beach: the evidence that 76–95 mm clams belong to the year-old cohort at the southern beaches and to the two-year-olds at Kalaloch |
+| `cohort_growth_increments.csv`, `cohort_growth_increments_summary.csv` | 02 | Annual growth increments from the same tracking (best-predicted 10 mm bin one survey later) and the growth parameters they imply (K with L∞ fixed at the WDFW value; both free) beside the WDFW values and the constants the mixture uses |
+| `cohort_separation_by_year.csv` | 01b | Every beach-year's mixture fit and year-class abundances (same as `02_data/derived/cohort_lengths.csv`) |
+| `cohort_separation_summary.csv` | 02 | By beach: growth constants used, fit quality, fitted boundaries, share of the year-old cohort above 76 mm, share of each size class belonging to another year class, and the length-based linkage beside the size-class linkage |
 | `synchrony_prerecruits.csv`, `synchrony_recruits.csv` | 02 | Cross-beach correlation matrices (log abundance) |
 | `abundance_summary.csv` | 02 | Median, range and SD(log) of abundance by beach and size class |
 | `synchrony_summary.csv` | 02 | Mean cross-beach correlation, raw and detrended, with and without Kalaloch |
@@ -49,10 +59,12 @@ Outputs of `./run_pipeline.sh` (`01_code/R/run_all.R`). Do not edit by hand; rer
 | `confirmatory_by_beach.csv` | 04 | Beach-specific GLS-AR(1) effects, BH q |
 | `confirmatory_beuti_robustness.csv` | 04 | BEUTI and CUTI under linear/loess detrending, first differences, leave-one-out, without the most influential year, post-2003 |
 | `confirmatory_predictor_correlations.csv` | 04 | Correlations among predictors and with year |
+| `confirmatory_pooled_lengthbased.csv`, `confirmatory_coastwide_lengthbased.csv` | 04 | The pre-specified tests with the length-based year classes as responses (sensitivity vi), Holm within that set |
 | `window_scan_summary.csv`, `window_scan_best_per_variable.csv`, `window_scan_top10.csv`, `window_scan_all.csv` | 05 | Scan results with naive p, BH q, family-wise p; raw r and r with year beside the detrended r |
 | `window_scan_trend_attribution.csv` | 05 | Strongest undetrended window per series, split into trend (r with year) and what remains after detrending |
 | `forecast_skill_original_framework.csv`, `forecast_skill_original_by_series.csv` | 06 | Skill vs climatology for leaky/honest selection, persistence, carry-over |
 | `forecast_skill_cohort_framework.csv`, `forecast_skill_cohort_selections.csv`, `forecast_selection_stability.csv`, `forecast_skill_cohort_fallback_counts.csv` | 06 | Year-class framework: skill of trend, a priori BEUTI, honest and leaky scan selection; which series and window each origin chose; selection stability |
+| `*_lengthbased.csv` (the same four) | 06 | The year-class framework with the length-based year-old cohort as the target |
 | `forecast_ledger.csv` | 08 | Forecasts issued under `docs/forecast-protocol.md`, one block per target survey year with issue date, commit and data vintage. **Never overwritten**; rerunning after estimates arrive scores them |
 | `forecast_scores.csv`, `forecast_scores_summary.csv` | 08 | Scores of ledger rows whose estimates exist (empty until the 2025 estimates are added) |
 | `forecast_2025_archived.csv` | archive | Proof-of-concept forecasts for survey 2025 made 2026-10-02 by the earlier script; kept, superseded by the ledger |

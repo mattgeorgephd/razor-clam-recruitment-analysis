@@ -53,5 +53,12 @@ One row per beach × year class Y (1988–2024). Year class Y is spawned and set
 | `pre_next`, `log_pre_next`, `doy_next`, `p_lt30_next` | Pre-recruits counted at survey Y+1 and that survey's date and settler share |
 | `rec_next2`, `log_rec_next2` | Recruits at survey Y+2 |
 | `spawners`, `log_spawners` | Recruits at survey Y (spawning stock for year class Y) |
+| `yc1_next`, `log_yc1_next`, `n_lengths_next`, `separation_flag_next` | Length-based: the year-old cohort of year class Y at survey Y+1 (settler-free, including its fast tail above 76 mm), from the mixture of `01b_cohort_separation.R`; the number of measured clams behind it and a flag (`ok`, `few lengths` <150, `poor fit` KS >0.08) |
+| `yc2_next2`, `log_yc2_next2`, `n_lengths_next2` | Length-based: two-year-olds of year class Y at survey Y+2 |
+| `yc0_settlers`, `log_yc0_settlers` | Length-based: current-year settlers of year class Y at the survey of year Y, only where that survey is on or after 1 July (NA otherwise) |
 
-The five predictors were fixed before any correlation with clam data was examined; rationale in `docs/methodology-review.md` §5.2. Window means require ≥75% of months to be present.
+The five predictors were fixed before any correlation with clam data was examined; rationale in `docs/methodology-review.md` §5.2. Window means require ≥75% of months to be present. The `yc*` columns are a sensitivity arm (task T14): the size-class columns remain the primary responses.
+
+## `cohort_lengths.csv`
+
+One row per beach × survey year with measured lengths (144 beach-years), written by `01b_cohort_separation.R`: the growth-curve-informed mixture fit (component means, SDs and shares; the growth constants used; fitted cohort boundaries; the share of the year-old cohort above 76 mm and of each 76 mm class that belongs to another year class; log-likelihood, Kolmogorov distance `ks`, iterations) and the resulting year-class abundances `N_settler`, `N_age1`, `N_age2`, `N_age3plus` (shares × (pre-recruits + recruits)). `low_precision` marks fewer than 150 lengths. Identical to `03_analyses/robust-reanalysis/tables/cohort_separation_by_year.csv`.

@@ -21,13 +21,23 @@ FIG_CAPTIONS <- c(
   fig_length_frequency = "Length-frequency distributions by beach and survey timing; a <=20 mm settler mode appears only in surveys after mid-July.",
   fig_cohort_linkage = "Log pre-recruits at survey t versus log recruits at survey t+1.",
   fig_growth_curve_check = "The year-old cohort's length by survey date (kernel mode and mixture component per beach-year, with the settler component where present), against the WDFW mark-recapture growth curve with t0 = 0 (legacy notebook) and with t0 fitted.",
+  fig_growth_increments = "Annual growth increments from year-class tracking across consecutive surveys (the 10 mm bin at survey t best predicted by each bin at t-1), against the WDFW curve and the curve used by the length mixture; Kalaloch grows about half as fast at a given length.",
+  fig_cohort_mixture_examples = "Example growth-curve-informed length-mixture fits, one typical survey per beach: fitted year-class components, their sum, the fitted cohort boundaries and the 76 mm size-class boundary.",
+  fig_cohort_separation_boundaries = "Fitted cohort boundaries (settler | year-old, year-old | two-year-old, two-year-old | older) for every beach-year by survey date, against the 76 mm boundary and the growth curve.",
+  fig_cohort_separation_shares = "Share of each 76 mm size class that belongs to another year class: settlers in the pre-recruit class, year-olds in the recruit class, and the share of the year-old cohort above 76 mm, by survey date.",
+  fig_cohort_linkage_lengthbased = "Log year-old cohort (length-based) at survey t versus log two-year-olds at survey t+1; crosses mark fits with few lengths or a poor fit.",
+  fig_yearclass_abundance = "The 76 mm size classes beside the length-based year classes by beach and survey year.",
   fig_null_audit = "Largest |r| in the original 90-cell screening grid per beach and size class (red) against phase-randomised surrogates (grey).",
   fig_confirmatory_forest = "Pre-specified predictor effects (per SD, 95% CI) on pre-recruits of year class Y at survey Y+1 and recruits at Y+2, under three specifications.",
   fig_beach_heterogeneity = "Beach-specific GLS-AR(1) estimates for the same predictors.",
+  fig_confirmatory_lengthbased = "Pre-specified predictor effects with the 76 mm size classes and with the length-based year classes as responses (sensitivity vi).",
   fig_window_scan_pre = "Exploratory window scan for pre-recruits: detrended r of every 1-4 month window with the coastwide year-class index; outlined cells would pass family-wise control.",
   fig_window_scan_rec = "Exploratory window scan for recruits (same conventions).",
+  fig_window_scan_yc1 = "Exploratory window scan for the length-based year-old cohort at survey Y+1 (same conventions).",
+  fig_window_scan_yc2 = "Exploratory window scan for the length-based two-year-olds at survey Y+2 (same conventions).",
   fig_forecast_skill = "Rolling-origin forecast skill versus climatology: leaky vs honest predictor selection, persistence, stock carry-over.",
   fig_forecast_skill_cohort = "Year-class pre-recruits: out-of-sample skill of the exploratory predictor search (honest vs leaky selection) against trend and a priori models.",
+  fig_forecast_skill_cohort_lengthbased = "The same skill comparison with the length-based year-old cohort as the target.",
   fig_env_coverage = "Coverage of every environmental source by year-month; the clam survey period is boxed.",
   fig_legacy_idw_vs_homogenized = "The legacy notebook's station-blended beach temperature (points, coloured by dominant station) against the homogenised regional anomaly (line).",
   fig_sst_homogenization = "The regional SST anomaly under four constructions, with +/- 2 SE of the pipeline series.",
@@ -42,6 +52,12 @@ TAB_DESCRIPTIONS <- c(
   cohort_linkage = "Correlations linking pre-recruits and recruits across consecutive surveys",
   growth_model_check = "The WDFW growth curve placed on the age axis: implied t0 per beach under two identifications of the year-old cohort, age at 76 mm, expected lengths of a year class at surveys Y+1 and Y+2, share of beach-years with a settler component or with year-old clams above 76 mm",
   growth_model_check_by_year = "Kernel mode, mixture components and implied t0 for every beach-year",
+  cohort_growth_increments = "Year-class tracking in 10 mm bins: for each bin at survey t-1 the best-predicted bin at t, the correlation and the implied annual increment, against the growth curves",
+  cohort_growth_increments_summary = "Growth parameters from the tracking (K with L-inf fixed at the WDFW value, and both free) beside the WDFW values and the parameters used by the length mixture",
+  cohort_length_transitions = "Correlations of log numbers in five length groups with the same survey and the two previous surveys of the same beach, pooled by survey timing: why 76 mm is not a cohort boundary",
+  cohort_length_transitions_by_beach = "The key length-group transitions per beach",
+  cohort_separation_summary = "Length-mixture separation by beach: growth parameters used, fitted boundaries, contamination of the 76 mm classes, fit quality and cohort linkage of the length-based year classes beside the size classes",
+  cohort_separation_by_year = "Every beach-year's mixture fit: component means, shares, boundaries, contamination shares, fit statistics and the resulting year-class abundances",
   synchrony_prerecruits = "Cross-beach correlation matrix, log pre-recruits",
   synchrony_recruits = "Cross-beach correlation matrix, log recruits",
   synchrony_summary = "Mean cross-beach correlation, raw and detrended, with and without Kalaloch",
@@ -57,6 +73,8 @@ TAB_DESCRIPTIONS <- c(
   confirmatory_by_beach = "Beach-specific GLS-AR(1) effects with BH q",
   confirmatory_beuti_robustness = "BEUTI and CUTI under alternative detrending, first differences, leave-one-out, without the most influential year",
   confirmatory_predictor_correlations = "Correlations among predictors and with year",
+  confirmatory_pooled_lengthbased = "Pooled LMM effects with the length-based year classes as responses (sensitivity vi), Holm within the sensitivity set",
+  confirmatory_coastwide_lengthbased = "Coastwide index GLS-AR(1) effects with the length-based year classes",
   window_scan_summary = "Window-scan totals and null thresholds",
   window_scan_best_per_variable = "Best window per variable with naive, BH and family-wise p, raw r and r with year",
   window_scan_top10 = "The ten strongest windows per response (the exploratory ranking of predictors)",
@@ -68,6 +86,10 @@ TAB_DESCRIPTIONS <- c(
   forecast_skill_cohort_selections = "Which series and window the honest search chose at each training origin",
   forecast_selection_stability = "How often each series was chosen across training origins",
   forecast_skill_cohort_fallback_counts = "Cohort-framework forecasts that fell back to climatology",
+  forecast_skill_cohort_framework_lengthbased = "Skill of the same models for the length-based year-old cohort",
+  forecast_skill_cohort_selections_lengthbased = "Which series and window the honest search chose at each training origin, length-based target",
+  forecast_selection_stability_lengthbased = "How often each series was chosen across training origins, length-based target",
+  forecast_skill_cohort_fallback_counts_lengthbased = "Cohort-framework forecasts that fell back to climatology, length-based target",
   forecast_skill_fallback_counts = "Forecasts that fell back to climatology for lack of a predictor",
   forecast_2025_archived = "Proof-of-concept forecasts for the 2025 survey archived on 2026-10-02 (superseded by the ledger)",
   forecast_ledger = "Forecasts issued under docs/forecast-protocol.md, one block per target survey year, never overwritten",
@@ -143,6 +165,22 @@ safe({
                         r2(min(cl$r_pre_t_rec_t1)), " to ", r2(max(cl$r_pre_t_rec_t1)), ").")
 })
 safe({
+  cs <- get_tab("cohort_separation_summary"); gi <- get_tab("cohort_growth_increments_summary")
+  if (!is.null(cs)) {
+    a <- cs %>% filter(beach == "All beaches"); b <- cs %>% filter(beach != "All beaches")
+    add("- **Year classes from the lengths (T14).** Growth-curve-informed mixtures fitted to ", a$n_beach_years, " beach-years (median KS distance ",
+        r2(a$median_ks, 3), "). The year-old cohort reaches above 76 mm at every beach (mean share ", r2(a$mean_share_age1_above_76),
+        "; Twin Harbors ", r2(b$mean_share_age1_above_76[b$beach == "Twin Harbors"]), "); year-olds are ", r2(a$mean_share_rec_class_age1),
+        " of the recruit class on average, and current-year settlers ", r2(a$mean_share_pre_class_settlers),
+        " of the pre-recruit class at surveys from July. Cohort linkage r(year-olds at t, two-year-olds at t+1) = ",
+        paste(sprintf("%s %.2f", b$beach, b$r_age1_t_age2_t1), collapse = ", "), " against r(pre-recruits, recruits at t+1) = ",
+        paste(sprintf("%.2f", b$r_pre_t_rec_t1), collapse = ", "), ".")
+  }
+  if (!is.null(gi)) add("- **Growth from year-class tracking.** K with L-inf fixed at the WDFW value: ",
+                        paste(sprintf("%s %.2f (WDFW %.2f)", gi$beach, gi$K_tracking_Linf_fixed, gi$K_wdfw), collapse = ", "),
+                        "; the mixture uses K = ", r2(gi$K_used_by_mixture[gi$beach == "Kalaloch"]), " at Kalaloch.")
+})
+safe({
   g <- get_tab("null_audit_global")
   if (!is.null(g)) add("- **Original screen vs chance.** ", g$observed_sig_p05, " of ", g$cells,
                        " cells have p < 0.05; the surrogate null gives a median of ", round(g$null_median),
@@ -160,6 +198,12 @@ safe({
         if (!is.null(cc)) { x <- cc %>% filter(response == "log_pre_next", predictor == "beuti_larval")
           paste0("; coastwide index GLS-AR(1): ", r2(x$estimate), " +/- ", r2(x$se), " SD, Holm p = ", r2(x$p_holm, 3)) } else "",
         ".")
+    lb <- get_tab("confirmatory_pooled_lengthbased"); cl <- get_tab("confirmatory_coastwide_lengthbased")
+    if (!is.null(lb)) { y <- lb %>% filter(response == "log_yc1_next", predictor == "beuti_larval", !drop_kalaloch)
+      add("- **BEUTI on the length-based year-old cohort (sensitivity vi).** Pooled LMM: ", r2(y$estimate), " (", r2(y$lo), " to ", r2(y$hi),
+          ") per SD, Holm p = ", r2(y$p_holm, 2),
+          if (!is.null(cl)) { z <- cl %>% filter(response == "log_yc1_next", predictor == "beuti_larval")
+            paste0("; coastwide index GLS-AR(1): ", r2(z$estimate), " +/- ", r2(z$se), " SD, Holm p = ", r2(z$p_holm, 3)) } else "", ".") }
     other <- cp %>% filter(response == "log_pre_next", predictor != "beuti_larval", trend, !drop_kalaloch)
     add("- **Other pre-specified predictors of pre-recruits.** None approach significance (smallest p = ",
         r2(min(other$p_lrt), 2), ").")

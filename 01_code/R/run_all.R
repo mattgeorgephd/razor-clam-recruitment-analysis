@@ -7,8 +7,8 @@
 # <out>/report.md (and report.html when pandoc is available).
 #
 # Usage, from the repository root (./run_pipeline.sh accepts the same flags):
-#   Rscript 01_code/R/run_all.R                full run (~1.5 min) -> 03_analyses/robust-reanalysis/
-#   Rscript 01_code/R/run_all.R --fast         200 surrogates instead of 2000 (~1 min);
+#   Rscript 01_code/R/run_all.R                full run (~8 min) -> 03_analyses/robust-reanalysis/
+#   Rscript 01_code/R/run_all.R --fast         200 surrogates instead of 2000 (~5 min);
 #                                              writes to 03_analyses/robust-reanalysis-fast/ (git-ignored)
 #   Rscript 01_code/R/run_all.R --steps=04,10  only these steps, in this order
 #   Rscript 01_code/R/run_all.R --from=05      this step and every later one
@@ -33,12 +33,13 @@
 
 # ── Step registry (order matters: 10 compiles what 01–09 produce) ───────────
 STEPS <- data.frame(
-  id   = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10"),
-  file = c("01_build_datasets.R", "02_cohort_diagnostics.R", "03_null_audit.R",
+  id   = c("01", "01b", "02", "03", "04", "05", "06", "07", "08", "09", "10"),
+  file = c("01_build_datasets.R", "01b_cohort_separation.R", "02_cohort_diagnostics.R", "03_null_audit.R",
            "04_confirmatory_models.R", "05_window_scan.R", "06_forecast_skill.R",
            "07_figures_overview.R", "08_forecast_protocol.R",
            "09_env_record_diagnostics.R", "10_report.R"),
   what = c("Parse raw inputs; derived tables; pre-specified cohort-aligned predictors",
+           "Year-class abundances from the shell lengths (growth-curve-informed mixture); adds yc columns to cohort_table",
            "Survey timing, length-frequency, cohort linkage, synchrony, trends",
            "Surrogate-null audit of the original screening grid",
            "Pre-specified confirmatory models (LMM, GLS-AR1) and sensitivity analyses",

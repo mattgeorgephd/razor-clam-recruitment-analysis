@@ -76,6 +76,40 @@ SST_MIN_STATION_MONTHS <- 24  # stations with shorter records cannot get a clima
 # run_all.R --vintage=cached sets the other.
 INDEX_VINTAGE <- match.arg(Sys.getenv("RC_INDEX_VINTAGE", unset = "current"), c("cached", "current"))
 
+# Growth curve (Cheng and Ayres 2008, docs/references/; method Cheng & Kuk 2002).
+# K and L-inf per beach from the two study sites (northern beaches use Copalis,
+# Twin Harbors uses Long Beach). The study cannot identify t0; VB_T0 is the
+# midpoint of the two survey-based estimates in 02_cohort_diagnostics.R (f)
+# (0.39 from mixture components, 0.51 from kernel modes; docs/growth-model-
+# review.md). SETTLE_DOY is the nominal settlement date (1 August) from which
+# a year class's age is counted; t0 shifts one-for-one with it.
+VB_LINF <- c(Kalaloch = 143.17, Mocrocks = 143.17, Copalis = 143.17, `Twin Harbors` = 141.67, `Long Beach` = 141.67)
+VB_K    <- c(Kalaloch = 1.00,   Mocrocks = 1.00,   Copalis = 1.00,   `Twin Harbors` = 0.98,   `Long Beach` = 0.98)
+VB_T0   <- 0.45
+SETTLE_DOY <- 213L
+# expected shell length (mm) of a clam of `age` years (counted from SETTLE_DOY)
+vb_length <- function(beach, age, K = VB_K[beach], t0 = VB_T0) unname(VB_LINF[beach] * (1 - exp(-K * (age - t0))))
+# age (years) at which the curve reaches length L
+vb_age <- function(beach, L, K = VB_K[beach], t0 = VB_T0) unname(t0 - log(1 - L / VB_LINF[beach]) / K)
+
+# Growth used by the length mixture (lib_cohort_mixture.R, 01b_cohort_separation.R).
+# The WDFW curve at the four southern beaches: tracking year classes across
+# consecutive surveys (02_cohort_diagnostics.R (g), tables/cohort_growth_
+# increments_summary.csv) gives K = 1.02 at both study beaches with L-inf fixed
+# at the WDFW value, so the curve is corroborated there. Kalaloch, which the
+# study did not cover, grows about half as fast at a given length (annual
+# increment at 55 mm about 31 mm against 56 mm): K from the tracking (0.43),
+# with t0 chosen so that the year-old cohort sits at its observed mode (58.8 mm
+# at the median survey date, DOY 205; growth_model_check.csv). The year-old cohort gets a fast
+# component only where the 76-95 mm clams track the same survey's 25-75 mm
+# clams (the four southern beaches); at Kalaloch they track the previous
+# survey's 25-75 mm clams, i.e. they are two-year-olds
+# (tables/cohort_length_transitions_by_beach.csv).
+MIX_K  <- replace(VB_K, "Kalaloch", 0.43)
+MIX_T0 <- c(Kalaloch = -0.25, Mocrocks = VB_T0, Copalis = VB_T0, `Twin Harbors` = VB_T0, `Long Beach` = VB_T0)
+MIX_FAST_TAIL <- c(Kalaloch = FALSE, Mocrocks = TRUE, Copalis = TRUE, `Twin Harbors` = TRUE, `Long Beach` = TRUE)
+mix_length <- function(beach, age) vb_length(beach, age, K = MIX_K[beach], t0 = MIX_T0[beach])
+
 SEED <- 20261002
 # Surrogate series for permutation / null calibration. run_all.R --fast sets
 # RC_N_SURROGATES=200 (about 1 min instead of 1.5); p-values are then coarser.
