@@ -20,7 +20,7 @@ From `04_documentation/Razor Clam ER Summary (distn).docx`: transects are system
 
 The management history slide dates the pumped-area method's adoption to 1997, which is why the recruitment series starts there; the 2003 data-notes memo confirms there are no consistent pumped-area data before 1997 and no mark-recapture data.
 
-Exploitation rates: 25% from M = 0.5 and F = 0.75M, 30% from 2006 (F = M), variable up to about 40% scaled by current over maximum spawning biomass with a 40-10 rule (v10 §6.4); Kalaloch fixed at 25.4%; co-managed beaches split 50/50 with the tribes. The v10 document cites "Cheng 2011" and the "Cheng and Kuk 2002 method" for this, so that reference is a WDFW internal report (the owner confirms it is unpublished grey literature; task T7).
+Exploitation rates: 25% from M = 0.5 and F = 0.75M, 30% from 2006 (F = M), variable up to about 40% scaled by current over maximum spawning biomass with a 40-10 rule (v10 §6.4); Kalaloch fixed at 25.4%; co-managed beaches split 50/50 with the tribes. The v10 document cites "Cheng 2011" and the "Cheng and Kuk 2002 method" for this. Cheng and Kuk (2002) is the published *Biometrics* method paper; the razor clam growth parameters come from the unpublished Cheng and Ayres (2008) WDFW draft, now deposited at `docs/references/` (`docs/growth-model-review.md`); "Cheng 2011" is presumably a further internal WDFW report on the exploitation-rate rule and has not been seen (task T7).
 
 ## 4. Harvest uncertainty, which does exist
 
@@ -38,7 +38,7 @@ These are copied into `02_data/harvest-monitoring/` with provenance.
 2. **Discrepancies in our season summary (new task T36).** Comparing `razor-clam-season-summary-1997-2025.xlsx` with the harvest repository's `Season_Beach_Summary`: most beach-seasons from 2012-13 agree within ±7%, but (i) Copalis and Mocrocks 2009-10 to 2011-12 are 18–30% lower in our file (Copalis 2010-11: 674,714 vs 962,042), consistent with pre-2013-correction values; (ii) Copalis and Mocrocks 2017-18 (233,140 and 164,125) equal the mid-season snapshot, not the final 546,213 and 771,324 plus wastage; (iii) Twin Harbors 2024-25 is recorded as zero harvest in our file against 1,248,274 clams plus 7,099 wastage with 98,096 digger-trips in the harvest repository; (iv) Kalaloch 2010-11: 14,345 vs 4,567; (v) 2016-17 Long Beach effort in our file (149,057) exceeds every harvest-repository figure. Our `exploitation_rate` column and any harvest-adjusted model inherit these.
 3. **TAC entry error.** Our `TAC_state` for Mocrocks 2018-19 (3,852,458) exceeds the file's own `TAC` (3,017,548); the harvest workbook has 1,508,774 (task T37).
 4. **Kalaloch** has 16 creel events in the database, 40 typed beach-days, a correction factor of exactly 1.000 on three events, and an expansion table borrowed from a 1998 Mocrocks survey. Its harvest numbers are the least reliable, which adds to the reasons to show results with and without it.
-5. **Cheng and Kuk (2002)** is an internal WDFW report used for the exploitation-rate rule, not a growth study per se; whether it also carries the von Bertalanffy parameters the notebook used will be known when the owner supplies it.
+5. **The growth-model citation is settled** (`docs/growth-model-review.md`): Cheng and Kuk (2002) is the published random-effects method; the parameters are from the unpublished Cheng and Ayres (2008) WDFW draft, deposited in this repository. The "Cheng 2011" report that v10 cites for the exploitation-rate rule is a different document and has not been seen.
 
 ## 6. Red flags noted in passing
 
