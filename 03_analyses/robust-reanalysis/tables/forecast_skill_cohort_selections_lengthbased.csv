@@ -1,0 +1,65 @@
+series,year,obs,climatology,honest_scan,honest_var,honest_window,leaky_var,leaky_window
+Kalaloch|Age1YC,2011,12.106100038066906,13.492652010360928,14.704619481880727,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Kalaloch|Age1YC,2012,13.676114590457916,13.400215212207993,10.609823125328486,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Kalaloch|Age1YC,2013,12.50847378276626,13.417458923348613,15.20967431061544,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Kalaloch|Age1YC,2014,18.315475029723174,13.36398920919671,10.281164328945465,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Kalaloch|Age1YC,2015,12.181693884367606,13.639071754781513,16.27041381855179,"SST anomaly (MUR, 5-beach mean)",Jul Y - Oct Y,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Kalaloch|Age1YC,2016,18.371253808768497,13.562367656338676,13.149009906834154,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Kalaloch|Age1YC,2017,14.304913419425873,13.802811963960167,12.925926221925318,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Kalaloch|Age1YC,2018,16.25490833230966,13.826721557077581,17.719653364410146,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Kalaloch|Age1YC,2019,16.073013901390294,13.937093683224495,15.561819821070053,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Kalaloch|Age1YC,2020,18.390496501931,14.029959779666486,15.675853005138347,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Kalaloch|Age1YC,2021,13.371217473940174,14.21164880976084,17.16195146910381,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Kalaloch|Age1YC,2022,15.442397756266768,14.178031556328014,15.83505452226765,"SST anomaly (MUR, 5-beach mean)",May Y - Aug Y,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Kalaloch|Age1YC,2023,12.991157729992866,14.226661025556428,16.2813377111568,"SST anomaly (MUR, 5-beach mean)",May Y - Aug Y,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Mocrocks|Age1YC,2011,16.301725458901878,15.525953065979811,14.906013801993206,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Mocrocks|Age1YC,2012,16.196938086356447,15.577671225507949,14.699802038413464,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Mocrocks|Age1YC,2013,16.06796523653439,15.61637540431098,16.28639454588868,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Mocrocks|Age1YC,2014,15.966538380925684,15.642939512088828,15.534025045888553,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Mocrocks|Age1YC,2015,13.871860102077369,15.660917227024209,16.259314238104245,"SST anomaly (MUR, 5-beach mean)",Jul Y - Oct Y,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Mocrocks|Age1YC,2016,16.408471822269977,15.566756325711218,14.523607562369309,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Mocrocks|Age1YC,2017,16.184144681750336,15.608842100539155,15.717705627285403,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Mocrocks|Age1YC,2018,16.056095389071807,15.636237461549213,16.229875865140368,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Mocrocks|Age1YC,2019,16.4025997992669,15.65532191280024,15.979499100236563,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Mocrocks|Age1YC,2020,17.465458078139665,15.687812255690094,15.143513565157983,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Mocrocks|Age1YC,2021,16.131734517650116,15.761880831625492,16.808722081140935,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Mocrocks|Age1YC,2022,16.25924679120719,15.776674979066478,16.01458583961207,"SST anomaly (MUR, 5-beach mean)",May Y - Aug Y,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Mocrocks|Age1YC,2023,15.948556470915776,15.795235433379581,16.792492669815005,"SST anomaly (MUR, 5-beach mean)",May Y - Aug Y,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Copalis|Age1YC,2012,15.145216602462424,15.691200886930533,15.06380894197576,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Copalis|Age1YC,2013,15.984364652359249,15.65480193463266,16.01271270140324,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Copalis|Age1YC,2014,16.134259292372708,15.675399604490572,14.985548816694191,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Copalis|Age1YC,2015,15.19834931535216,15.70239135083658,16.325846623281855,"SST anomaly (MUR, 5-beach mean)",Jul Y - Oct Y,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Copalis|Age1YC,2016,15.804319568201349,15.67438901553189,14.825201167504234,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Copalis|Age1YC,2017,16.186702345905566,15.681227465672388,15.419372181222668,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Copalis|Age1YC,2018,16.203633844642802,15.706501209684046,15.963748090389036,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Copalis|Age1YC,2019,16.727171939213335,15.73017419230113,15.6237870773662,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Copalis|Age1YC,2020,16.796391669114954,15.77549227170623,14.878554682823172,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Copalis|Age1YC,2021,16.441485326198556,15.819879202028348,16.707112832616048,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Copalis|Age1YC,2022,16.23913018939639,15.845779457202108,16.1740465880268,"SST anomaly (MUR, 5-beach mean)",May Y - Aug Y,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Copalis|Age1YC,2023,15.563487561704736,15.861513486489878,16.74916613936679,"SST anomaly (MUR, 5-beach mean)",Aug Y - Oct Y,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Twin Harbors|Age1YC,2011,16.211161958999085,15.228231836328797,15.479527582653878,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Twin Harbors|Age1YC,2012,14.838548323686393,15.293760511173483,14.431004605355158,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Twin Harbors|Age1YC,2013,15.550166558142497,15.26530974945554,15.008514399058242,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Twin Harbors|Age1YC,2014,15.099848141313396,15.282066032319479,15.117806510700715,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Twin Harbors|Age1YC,2015,15.126756526075036,15.271942816152475,16.31874874547246,"SST anomaly (MUR, 5-beach mean)",Jul Y - Oct Y,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Twin Harbors|Age1YC,2016,14.165743664809714,15.264301432464187,14.921580252938423,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Twin Harbors|Age1YC,2017,15.165628707530953,15.209373544081464,15.746043650322889,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Twin Harbors|Age1YC,2018,15.364846468758389,15.207290456626678,15.30762823773592,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Twin Harbors|Age1YC,2019,15.433796726653224,15.214452093541755,15.129587557464108,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Twin Harbors|Age1YC,2020,15.97531986642626,15.223988816720516,14.714707760261385,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Twin Harbors|Age1YC,2021,14.838532516721733,15.255294277124921,15.649610201032916,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Twin Harbors|Age1YC,2022,15.417358459902854,15.238623806708793,15.089059836138432,"SST anomaly (MUR, 5-beach mean)",May Y - Aug Y,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Twin Harbors|Age1YC,2023,15.693824648849668,15.245498216447027,15.362163853790795,"SST anomaly (MUR, 5-beach mean)",May Y - Aug Y,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Long Beach|Age1YC,2011,16.620922704763295,15.865457278401939,14.880572210533312,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Long Beach|Age1YC,2012,13.90572985024206,15.915821640159363,15.173819951769852,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Long Beach|Age1YC,2013,17.270432007659615,15.790190903289531,16.009942041043526,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Long Beach|Age1YC,2014,17.11215229459143,15.877263909428947,14.892621834631685,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Long Beach|Age1YC,2015,15.998478086081343,15.945868819715752,17.156515599080517,"SST anomaly (MUR, 5-beach mean)",Jul Y - Oct Y,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Long Beach|Age1YC,2016,12.60476254304304,15.948637728471835,15.781900076198863,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Long Beach|Age1YC,2017,16.190479401916395,15.781443969200396,15.081970225464339,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Long Beach|Age1YC,2018,17.35648298412881,15.800921846948777,15.580742903438425,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Long Beach|Age1YC,2019,17.500981051402377,15.87162917136605,15.993914357010604,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Long Beach|Age1YC,2020,17.134556707183215,15.942470557454588,14.579328598289479,SST anomaly (buoys),Jul Y-1 - Jul Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Long Beach|Age1YC,2021,15.195744537991244,15.99214081369328,18.036649401872264,Storm hours Hs > 4 m (buoys),Jan Y-1 - Jan Y-1,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Long Beach|Age1YC,2022,16.998209245851115,15.960284962665199,15.666050689285942,"SST anomaly (MUR, 5-beach mean)",May Y - Aug Y,Wave energy Hs^2 (buoys),Jul Y - Aug Y
+Long Beach|Age1YC,2023,16.368657712564044,16.00020512740312,17.413960922956434,"SST anomaly (MUR, 5-beach mean)",May Y - Aug Y,Wave energy Hs^2 (buoys),Jul Y - Aug Y
