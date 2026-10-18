@@ -1,0 +1,355 @@
+MACHINE EXTRACTION (antiword 0.37, 2026-10-02) of docs/references/Cheng_Ayres_2008_razor_clam_growth_WDFW_draft.doc.
+Equations, figures and table headers that were embedded objects appear as [pic]; the original .doc beside this file is authoritative.
+Authors: Henry Cheng and Dan Ayres (WDFW), confirmed by the repository owner on 2026-10-17; the file itself names no author.
+
+
+
+Modelling the growth of razor clam (Siliqua patula) in Washington State
+coast
+
+
+
+Summary
+
+      We propose a method for fitting growth curves to capture and recapture
+data of razor clam (RC)(Siliqua patula) when the age  at  first  capture  is
+unknown. 75 and 97 RCs were capture and recapture from the Copalis and  Long
+Beach in Washington State coast  between  year  2005  to  2007.   The  shell
+length and width of RCs were measured during  capture  and  recapture(s).  A
+comparison of linear and nonlinear relationship  between  shell  length  and
+width of  RCs  with  Akaike  information  Criteria  is  performed.  The  von
+Bertalanffy growth curve is  used  to  model  the  growth.  To  account  for
+individual variability, the unknown age in square transformation of a RC  at
+first recapture, and the individual growth coefficient of its  shell  length
+or  width  are  modeled  as  random  effects   with   a   bivariate   normal
+distribution.  A  comparison  between  this  model  and  the  Fabens  growth
+equation is given. The proposed new model results  with  better  statistical
+properties compared  with  Fabens  model.  It  provides  consistent,  robust
+results for both shell length and width of capture  and  recapture(s)  data.
+Moreover, the fitting of  model  is  amenable  to  existing  software.   The
+proposed method is a flexible method and can be  applied  to  fit  different
+growth equations when the age at first capture is unknown.
+
+
+
+Introduction
+
+      The tens of thousands of visitors who are drawn to Washington State's
+coastal communities to recreationally harvest razor clams continue to leave
+a significant economic contribution in their wake. This economic
+contribution is especially important during the quiet fall, winter and
+early spring months. As a result of input received at annual razor clam
+public meetings, WDFW has attempted over the last several years to allow
+more harvest during the October through March period than in previous
+years. This change in season setting was an attempt to specifically improve
+the economic impact of this fishery and has been very successful. A recent
+example was a turnout of 21,000 diggers on the evening of November 23,
+2007, (part of a 4-day post-Thanksgiving holiday opener.
+
+      The razor clam fishery in Washington is not only a significant source
+of revenue for tourism-dependent businesses such as restaurants and motels,
+but also an important source of community identity and basis for tribal
+subsistence. Razor clam harvesting, cleaning, cooking, eating, and canning
+have been an important focus of family relationships and local culture in
+Washington coastal communities for many generations.
+
+      Numerous  parametric  models  have  been  used  to  model  growth   of
+crustacean with the von Bertalanffy growth  curve  (von  Bertalanffy,  1938)
+being the method most commonly used. The growth  of  razor  clam  (Panulirus
+cygnus) is modelled in this paper using the von  Bertalanffy  growth  curve,
+which has the form:
+
+
+                                                                      [pic],
+                                                                         (1)
+                                                             [pic][pic][pic]
+where y(t) is the shell length of RC at age t, L is the asymptotic size  and
+K is the growth coefficient or constant. The advantage of the model is  that
+it is simple with only two unknown parameters.
+
+      For most crustaceans such as clam, lobster, pearl oyster and  abalone,
+it is difficult to estimate the age. There are two  well-known  methods  for
+constructing growth curves where length data are available, but where  those
+length data are of unknown age. These are the Walford plot  (Walford,  1946)
+and the Fabens method (Fabens, 1965). Cruywagen (1997)  used  a  generalized
+linear modeling approach (McCullagh and  Nelder,  1989)  to  examine  inter-
+annual differences in the growth increments of Jasus lalandii.  He  extended
+the Walford plot method to study inter-annual variation. However  his  model
+was only capable of handling observations that are equally spaced  in  time.
+The Fabens growth equation is
+
+
+                                       [pic],                            (2)
+
+where [pic] is the first recapture time  and  [pic]  is  the  first  capture
+time. This method is easy to model and has only two unknown parameters,  but
+suffers from several disadvantages.   Firstly,  it  ignores  the  individual
+variability in the  growth  curves  and  does  not  make  efficient  use  of
+multiple measurements of individuals. Secondly,  it  is  restricted  to  von
+Bertalanffy curves and its asymptotic behaviour is inconsistent (Maller  and
+de Boer, 1988). Finally, James (1991) used  estimating  function  techniques
+to produce an unbiased estimate of [pic]and [pic] under the assumption  that
+[pic]does not vary between animals. Lastly, the  estimated  standard  errors
+for the two unknown growth parameters might be bias  because  the  estimated
+standard errors of two unknown parameters from equation  (1)  might  not  be
+the equivalent to results from equation (2).
+
+
+
+Methods
+Beginning in February 2006, clams were planted along a total of four
+transects. Two transects were located in the Copalis Razor Clam Reserve,
+and two others in the Long Beach razor clam reserve. Clam were planted on
+each side of each transect (north and south). Each side of each transect
+was re-sampled every six-months (as weather and surf conditions allowed).
+This sampling was staggered so that one side was sampled and then three
+months later the other side was sampled.
+
+A series of permanent steel posts were placed in a line perpendicular to
+the surf. These were used to re-locate the exact position of each transect.
+
+
+Sampling was conducted using the WDFW standard razor clam sampling
+technique, the "pumped area method."  This involves using water pumped from
+the surf to liquidly the sand allowing the clams that are present to float
+to the surface and be sampled. At 50-foot intervals or elevations, starting
+at the top of the clam beds to the edge of the surf and perpendicular along
+each transect clams were sampled in six plots (each ½ square/meter in
+area).  All razor clams were removed as they came to the surface. Each clam
+was measured for both length and width.  Also recorded was the exact
+location the clam was taken from. This included transect, side (north or
+south), elevation (50, 100, 150, etc) and plot (1,2,3,4,5,6). The date was
+also recorded. The clams were then tagged. Of all clams over approximately
+75 mm in length, 1/3 (every third clam encountered) were marked by
+attaching a PIT (passive integrate transponder) tag to the exterior of the
+shell. Of all clams over approximately 75 mm in length, approximately 2/3's
+were marked by etching a unique identifier on the shell. Of all clams under
+approximately 75 mm in length, 100% were marked by attaching a PIT tag to
+the exterior of the shell. If possible, each PIT tagged clams were also
+etched with a light 'T' to assess rate of tag loss.
+
+The PIT tag was attached using cyanoacrylate (CA) glue and an accelerator
+to speed the drying time. Etching will be accomplished using a battery
+operated Dremel ® drill with an etching disk attached.
+
+Each plot was then "hardened' by adding sand to the liquefied area using a
+standard garden shovel. The tagged clams were then replanted in the exact
+plot from which they were taken. Care was taken to position each clam
+correctly to assure their survival. Additional sand was then added over the
+top of each plot.
+
+
+
+
+Data  (Henry...do you want to add the additional data we've since
+collected???  We just finsished another round of field work last week
+(1.21.08) at Copalis and will have these new data to you very soon...Dan)
+
+In Copalis, 75 RCs were recaptured and 9 of them were recaptured twice. In
+Long Beach, 97 RCs were recaptured and 8 of them were recaptured twice. The
+minimum duration between capture and recapture was 130 days and 142 days
+for Copalis and Long Beach.
+The maximum duration between capture and recapture was 1.5 years for them.
+The minimum, mean and maximum shell length sizes of Copalis RC first
+capture were 31.0 mm,  93.67 mm, and 137.2 mm. The minimum, mean and
+maximum shell length sizes of Long Beach RC first capture were 39.0 mm,
+105.10 mm, and 131.0 mm.
+
+
+Shell length and width relationship
+
+      We assumed RC  is with zero shell width when it is with zero shell
+length.  The commonly used shell length ([pic]) and width ([pic]) linear
+relationship  is
+[pic], where [pic]was unknown to be determined.
+In some cases,  the linear relationship did not fit well when the RC was
+small. We proposed to fit the shell length and width relationship with
+nonlinear equation,
+[pic], where [pic] and [pic]were unknown to be determined. We compared the
+fitted results by two above equations. Due to the difference in the number
+of  unknown parameters to be estimated, we compared the fit of two
+equations by the estimated residual sum of squares and the Akaike
+Information Criteria (Akaike, 1974).
+
+
+
+
+Proposed model
+
+      Let [pic] denote the unknown age of the [pic] RC at first capture  and
+[pic]be the time between  the  first  recapture  and  the  [pic]capture.  It
+follows that the age of the RC  [pic]at  the  [pic]capture  is  [pic].  Upon
+substitution into the von Bertalanffy growth curve, we obtain the  following
+model
+                    [pic],                                               (3)
+where [pic]is the shell or width length of RC [pic]at the [pic]capture,
+[pic] is the growth coefficient and [pic] is the asymptotic size of RC
+[pic]. [pic] restricts [pic]. The estimated mean first capture age is
+[pic], where [pic] and [pic]are mean and variance of [pic]. We model
+([pic]) as a bivariate normal distribution with mean vector ([pic]) and
+variance-covariance matrix [pic]. By doing so, we allow the age [pic] at
+the first capture to be correlated with the animal specific growth
+parameters [pic]. The error vectors [pic] are assumed to be distributed as
+[pic]. The choice [pic], where [pic]is the identity matrix, corresponds to
+the case of no serial correlation. For comparison purpose, we also computed
+the estimates using Fabens equation.
+
+
+Results
+
+      The estimated linear and nonlinear relationship between shell length
+and width of RC is listed Table 1.  The Copalis and Long Beach results are
+similar in both linear and nonlinear fits. Their 95% confidence intervals
+(CIs) are overlapped each other. From residual sum of squares, AIC and
+observed fitted curve or line with observed data (Figures 1 and 2), the
+nonlinear relationship fit out-performs the linear relationship fit. The
+fitted lines underestimated the shell length when the width is small. The
+fitted curves fits well for all width measurements of RC in both Copalis
+and Long Beach.
+      From the nonlinear fit results, the estimated ratio of shell length
+and width decreased with width increase. This implied the rate of RC width
+grew faster than the rate of RC shell length with larger RC.
+      In Table 2,  the results of the estimated asymptotic shell length of
+RC by Fabens, and Cheng and Kuk (2002, 2003) were listed with the estimated
+correlation ([pic][pic]) between [pic] and [pic]for both shell length and
+width in Copalis and Long Beach. It is well known that these two estimated
+parameters are highly negative correlated in von Bertalanffy growth
+equation construction. Its absolute value affects the speed and chance of
+success of convergence in nonlinear optimization. In addition, it affects
+precision of inference estimation in these parameters. The estimated [pic]s
+of new proposed model were with a lower absolute value compared the
+estimated  [pic]s  of Fabens model in all location and all measurements.
+This implies that the new proposed model has a better statistical
+properties than the Fabens model. In Copalis, the estimated asymptotic
+shell length and width, by Fabens model, were 2.1% and 2.6% less than the
+estimated shell length and width, by new proposed model.
+            The estimated standard errors of fixed effects
+We can not observe any over or under trend of estimated standard errors of
+[pic] and [pic]
+      At present, there is no legal size limit for Washington State
+recreational RC fishery. The bag limit is 15 RCs and the anglers should
+keep first RCs regarding the sizes. From Table 4, Figures 2 and 3, it can
+be seen that there are high negative correlations, -0.94 to -0.96 between
+the growth coefficient, [pic] and [pic]of the shell length of RCs in both
+Copalis and Long Beach. This implies faster growing RCs tend to be caught
+at a younger age. This is very useful information for RC management because
+some of harvested RCs might be less than 1 year old.
+
+
+
+Discussion
+
+      We propose an alternative  model  to  Fabens  model  to  estimate  the
+expected asymptotic size and expected growth  coefficient  of  RC  when  the
+initial first capture age is unknown. The  proposed  model  is  parsimonious
+and allows for unknown initial age and individual variability in the  growth
+curves. This is an advantage as knowledge of variation in individual  growth
+is very important in  developing  realistic  models  of  growth  in  RC  for
+harvesting  strategies  in  fisheries.  This  model  can  apply   to   other
+crustaceans, eg. abalone, red  sea  urchin,  lobster,...,etc,  where  direct
+aging is impossible.
+      Palmer  et  al.  (1991)  used  simulated  data  of  a   mark-recapture
+experiment on rock (spiny) lobster (Panulirus cygnus) in Mexico to show  the
+effectiveness of mixed effects model in estimating the  population's  growth
+curve and variability in individual growth. They  considered  growth  curves
+with random animal specific coefficients.  The  unknown  initial  age  of  a
+captured animal was  also  regarded  as  random  and  its  distribution  was
+approximated by a mixture of uniform distributions over 20  time  intervals.
+Independence between the coefficients and the initial age of an  animal  was
+assumed, which might be unreasonable  as  animals  with  faster  growth  are
+likely to be caught earlier. Estimation is by means of the  expectation  and
+maximization (EM) algorithm (Dempster et al., 1977) but  at  present,  there
+is no software available for fitting the model. Instead of finite  mixtures,
+Cheng and Kuk (2002, 2003) assume the distribution of  the  unknown  initial
+age to be log normal. Specifically, the unknown age at  first  capture,  the
+asymptotic size and the growth coefficient of carapace  length  are  modeled
+as  random  effects  (Laird  and  Wares,  1982)  with  a  trivariate  normal
+distribution. The error structure within all  the  consecutive  captures  of
+each lobster are assumed to be  first  order  autoregressive  process  AR(1)
+with unequally spaced time points. Most of lobsters were female  with  twice
+or more multiple recapture  observations  that  allowed  the  estimation  of
+trivariate  random  effects  and  the  autoregressive  errors  within   each
+lobster. Our RC data were  limited  to  estimate  bivariate  random  effects
+because most of data were limited to one  single  recapture.   We  chose  to
+model ([pic]) bivariate random  effects  instead  of   ([pic])  because  the
+estimated coefficient of variation (CV) of [pic] was smaller than the CV  of
+[pic]. In addition, we wanted to investigate the  growth  change  or  growth
+rate and the unknown age of first capture for individual RC.
+
+
+      In addition to the von  Bertalanffy  curve,  there  are  other  common
+growth curves such as logistic and Gompertz  (Moreau,  1987).  These  curves
+can also be used with the method discussed in this paper so as to deal  with
+the unknown age problem, whilst they cannot be with Fabens method.
+
+
+
+
+
+
+|             |Models     |[pic]    |[pic]  |Sum of    |AIC          |
+|             |           |         |       |squares   |             |
+|Copalis      |Linear     |2.51     |       |4734.00   |541.59       |
+|(n=159)      |           |(0.01)   |       |          |             |
+|             |Nonlinear  |4.49(0.21|0.85   |2417.77   |436.75       |
+|             |           |)        |(0.01) |          |             |
+|Long Beach   |Linear     |2.49     |       |5347.79   |663.79       |
+|(n=202)      |           |(0.01)   |       |          |             |
+|             |Nonlinear  |4.93(0.30|0.82   |3350.88   |571.36       |
+|             |           |)        |(0.02) |          |             |
+
+
+
+
+|Location   |Models     |[pic] (mm) |[pic]      |[pic]([pic]|[pic]      |
+|           |           |           |           |)          |           |
+|Copalis    |Faben      |140.16     |1.14 (0.08)|           |-0.82      |
+|           |           |(2.43)     |           |           |           |
+|           |Cheng and  |143.17     |1.00 (0.06)|1.01 (0.05)|-0.69      |
+|           |Kuk (2002) |(1.78)     |           |           |           |
+|Long Beach |Faben      |138.52     |1.16 (0.09)|           |-0.85      |
+|           |           |(1.96)     |           |           |           |
+|           |Cheng and  |141.67     |0.98 (0.04)|1.16 (0.04)|0.66       |
+|           |Kuk (2002) |(1.00)     |           |           |           |
+
+
+Table : Shell length
+
+
+|Location   |Models     |[pic] (mm) |[pic]      |[pic]      |[pic]      |
+|           |           |           |           |([pic])    |           |
+|Copalis    |Faben      |59.22      |0.97 (0.09)|           |-0.85      |
+|           |           |(1.49)     |           |           |           |
+|           |Cheng and  |60.77      |0.89 (0.09)|1.02 (0.06)|-0.80      |
+|           |Kuk (2002) |(1.54)     |           |           |           |
+|Long Beach |Faben      |58.42      |0.98 (0.08)|           |-0.88      |
+|           |           |(1.03)     |           |           |           |
+|           |Cheng and  |57.52      |0.90 (0.08)|1.23 (0.06)|-0.80      |
+|           |Kuk (2002) |(0.88)     |           |           |           |
+
+
+Table : Width length
+
+|Location              |Measurement (mm)                             |
+|                      |Shell length          |Width                 |
+|Copalis               |[pic]                 |[pic]                 |
+|Long Beach            |[pic]                 |[pic]                 |
+
+
+Table : A summary of the estimated the correlation matrix of random effects
+with different measurements
+[pic]
+copalis
+[pic]
+Figure 1: Figure 1: Plot of the expected growth curve of razor clam from
+Copalis beach, Washington State. Lines and polygons are individual razor
+clam longitudinal observations with the unknown age of first capture
+estimated from mixed effects model.
+
+
+[pic]
+Figure 2: Plot of the expected growth curve of razor clam from Long Beach,
+Washington State. Lines and polygons are individual razor clam longitudinal
+observations with the unknown age of first capture estimated from mixed
+effects model.
+

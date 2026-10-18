@@ -1,0 +1,4 @@
+var,n_origins_selected,share,selected_on_all_years,windows_selected
+SST anomaly (buoys),5,0.35714285714285715,FALSE,Jul Y-1 - Jul Y-1
+Storm hours Hs > 4 m (buoys),5,0.35714285714285715,FALSE,Jan Y-1 - Jan Y-1
+"SST anomaly (MUR, 5-beach mean)",4,0.2857142857142857,FALSE,Jul Y - Oct Y; May Y - Aug Y; Aug Y - Oct Y

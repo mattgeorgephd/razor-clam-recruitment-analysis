@@ -1,0 +1,5 @@
+comparison,n_years,r,r_detrended,mean_ratio
+"Beaver (lowest main-stem gauge) vs The Dalles, Apr-Jun",33,0.9682251797432079,0.969655767505597,1.2186122066825138
+"Beaver vs The Dalles + Willamette, Apr-Jun",33,0.9850548741069519,0.98635759331599,1.0911482080661987
+"Willamette vs The Dalles, Apr-Jun",33,0.447159943841053,0.4471763299675419,0.116079797043968
+"The Dalles: fresh download vs cached file, Apr-Jun",33,0.9999268545611943,0.9999336344778852,1.000845208083593

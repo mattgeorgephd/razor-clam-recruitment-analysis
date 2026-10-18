@@ -1,0 +1,21 @@
+series,station,class,first_year,last_year,months_full,months_partial,share_1997_2024_full,latitude,longitude,nearest_beach,nearest_km,in_regional_sst
+46041 Cape Elizabeth,46041,temperature: open coast,1990,2024,342,9,0.7916666666666666,47.353,-124.731,Kalaloch,38.5,TRUE
+46010,46010,temperature: open coast,1990,1991,16,0,0,NA,NA,NA,NA,FALSE
+46029 Columbia River Bar,46029,temperature: open coast,1991,2025,319,10,0.7678571428571429,46.144,-124.51,Long Beach,41.6,TRUE
+46211 Grays Harbor,46211,temperature: open coast,2004,2025,249,4,0.7053571428571429,46.857,-124.244,Twin Harbors,9.5,TRUE
+46087 Neah Bay (juan de fuca eddy),46087,temperature: open coast,2004,2025,203,7,0.5684523809523809,48.494,-124.727,Kalaloch,102,FALSE
+46248 Astoria Canyon,46248,temperature: open coast,2011,2025,167,1,0.46130952380952384,46.133,-124.667,Long Beach,52.5,TRUE
+46100 OOI Westport Offshore,46100,temperature: open coast,2016,2025,108,0,0.29464285714285715,46.851,-124.972,Twin Harbors,64.9,TRUE
+46099 OOI Westport Shelf,46099,temperature: open coast,2016,2025,93,1,0.25,46.986,-124.566,Copalis,32.5,TRUE
+46119 Cha'Ba La Push,46119,temperature: open coast,2016,2016,2,0,0.005952380952380952,47.967,-124.95,Kalaloch,58.5,FALSE
+46243 Clatsop Spit,46243,temperature: river mouth,2009,2025,193,0,0.5386904761904762,46.216,-124.128,Long Beach,16.8,FALSE
+46096 Columbia River Saturn Station #2,46096,temperature: river mouth,2011,2019,18,6,0.05357142857142857,46.173,-124.127,Long Beach,21.4,FALSE
+46127 Columbia River South Jetty,46127,temperature: river mouth,2016,2016,2,0,0.005952380952380952,46.215,-124.063,Long Beach,16.3,FALSE
+TOKW1 Tokepoint,TOKW1,temperature: estuary/harbor,2005,2025,226,0,0.6369047619047619,46.708,-123.965,Twin Harbors,20.1,FALSE
+NEAW1 Neah Bay,NEAW1,temperature: estuary/harbor,2005,2025,224,0,0.6309523809523809,48.368,-124.617,Kalaloch,86.5,FALSE
+LAPW1 La Push,LAPW1,temperature: estuary/harbor,2006,2025,213,1,0.5982142857142857,47.913,-124.637,Kalaloch,39.1,FALSE
+WPTW1 Westport Marina,WPTW1,temperature: estuary/harbor,2008,2025,207,0,0.5922619047619048,46.904,-124.105,Twin Harbors,5.5,FALSE
+HMDO3 Hammon NMFS Pier,HMDO3,temperature: estuary/harbor,2013,2014,19,0,0.05654761904761905,46.204,-123.951,Long Beach,19.8,FALSE
+WsptInnerShelf,WsptInnerShelf,salinity (OOI moorings),2014,2025,126,3,0.3482142857142857,NA,NA,NA,NA,FALSE
+WsptShelf,WsptShelf,salinity (OOI moorings),2015,2025,117,4,0.3273809523809524,NA,NA,NA,NA,FALSE
+WsptOuterShelf,WsptOuterShelf,salinity (OOI moorings),2015,2025,112,1,0.30654761904761907,NA,NA,NA,NA,FALSE

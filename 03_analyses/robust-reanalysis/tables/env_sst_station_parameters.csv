@@ -1,0 +1,13 @@
+station,name,class,in_regional_sst,nearest_beach,nearest_km,n_months,first_year,last_year,gain,sigma,r_loo,gain_loo,rmse_loo
+NEAW1,Neah Bay,estuary/harbor,FALSE,Kalaloch,86.518,224,2005,2025,0.709,0.453,0.776,0.651,0.434
+TOKW1,Tokepoint,estuary/harbor,FALSE,Twin Harbors,20.15,226,2005,2025,0.941,0.519,0.773,0.83,0.561
+LAPW1,La Push,estuary/harbor,FALSE,Kalaloch,39.127,213,2006,2025,0.876,0.751,0.673,0.79,0.764
+WPTW1,Westport Marina,estuary/harbor,FALSE,Twin Harbors,5.496,207,2008,2025,0.989,0.285,0.919,0.892,0.361
+46041,Cape Elizabeth,open coast,TRUE,Kalaloch,38.537,342,1990,2024,1.019,0.428,0.862,0.912,0.469
+46029,Columbia River Bar,open coast,TRUE,Long Beach,41.605,319,1991,2025,0.951,0.433,0.886,0.863,0.413
+46087,Neah Bay (juan de fuca eddy),open coast,FALSE,Kalaloch,102.022,203,2004,2025,0.763,0.476,0.809,0.68,0.474
+46211,Grays Harbor,open coast,TRUE,Twin Harbors,9.524,249,2004,2025,1.093,0.366,0.904,1.009,0.435
+46248,Astoria Canyon,open coast,TRUE,Long Beach,52.487,167,2011,2025,0.913,0.392,0.855,0.769,0.448
+46099,OOI Westport Shelf,open coast,TRUE,Copalis,32.506,93,2016,2025,1.132,0.328,0.834,0.904,0.439
+46100,OOI Westport Offshore,open coast,TRUE,Twin Harbors,64.884,108,2016,2025,0.892,0.348,0.79,0.662,0.42
+46243,Clatsop Spit,river mouth,FALSE,Long Beach,16.795,193,2009,2025,0.891,0.285,0.914,0.768,0.365
