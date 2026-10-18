@@ -18,7 +18,9 @@
 #   index (mean of beach-standardised residuals) with GLS-AR(1); (iv) beach-
 #   specific GLS-AR(1) fits for heterogeneity; (vi) the length-based year
 #   classes of 01b_cohort_separation.R (log_yc1_next, log_yc2_next2) in place
-#   of the 76 mm size classes (task T14).
+#   of the 76 mm size classes (task T14); (vii) beach-level satellite SST in
+#   place of the regional buoy anomaly (task T33); (viii) density (clams per
+#   m2 of habitat) in place of abundance (task T19).
 # Outputs: tables/confirmatory_*.csv, figures/fig_confirmatory_forest.png,
 #          figures/fig_beach_heterogeneity.png, fig_confirmatory_lengthbased.png
 
@@ -54,17 +56,19 @@ predictor_cor <- cohort %>% filter(beach == "Copalis", year_class %in% 1996:2023
   select(all_of(names(PREDICTORS)), year_class) %>% cor(use = "pairwise.complete.obs")
 write_tab(as_tibble(predictor_cor, rownames = "var"), "confirmatory_predictor_correlations")
 
-model_data <- function(resp, drop_kalaloch = FALSE) {
-  doy <- if (resp %in% c("log_pre_next", "log_yc1_next")) "doy1_c" else "doy2_c"
+# `spawn` names the spawner covariate: log recruits at survey Y, beach-centred
+# (spawn_c), or its density version (spawn_dens_c, sensitivity viii).
+model_data <- function(resp, drop_kalaloch = FALSE, spawn = "spawn_c") {
+  doy <- if (resp %in% c("log_pre_next", "log_yc1_next", "log_pre_dens_next")) "doy1_c" else "doy2_c"
   d <- cohort %>%
-    filter(!is.na(.data[[resp]]), !is.na(spawn_c), !is.na(.data[[doy]])) %>%
-    mutate(y = .data[[resp]], doy_c = .data[[doy]], yc = factor(year_class))
+    filter(!is.na(.data[[resp]]), !is.na(.data[[spawn]]), !is.na(.data[[doy]])) %>%
+    mutate(y = .data[[resp]], doy_c = .data[[doy]], spawn_c = .data[[spawn]], yc = factor(year_class))
   if (drop_kalaloch) d <- d %>% filter(beach != "Kalaloch") %>% mutate(beach = droplevels(beach))
   d
 }
 
-fit_one <- function(resp, pred, trend = TRUE, drop_kalaloch = FALSE) {
-  d <- model_data(resp, drop_kalaloch) %>% filter(!is.na(.data[[paste0(pred, "_z")]]))
+fit_one <- function(resp, pred, trend = TRUE, drop_kalaloch = FALSE, spawn = "spawn_c") {
+  d <- model_data(resp, drop_kalaloch, spawn) %>% filter(!is.na(.data[[paste0(pred, "_z")]]))
   d$x <- d[[paste0(pred, "_z")]]
   base <- if (trend) y ~ beach + trend + spawn_c + doy_c + (1 | yc) else y ~ beach + spawn_c + doy_c + (1 | yc)
   m0 <- lmer(base, data = d, REML = FALSE)
@@ -111,8 +115,8 @@ write_tab(full_fit, "confirmatory_full_model")
 # Within each beach, regress the response on spawners + survey date, take
 # standardised residuals, average across beaches per year class, then fit
 # GLS with AR(1) errors: index ~ trend + predictor.
-coast_fit <- function(resps) map_dfr(resps, function(resp) {
-  d <- model_data(resp) %>%
+coast_fit <- function(resps, spawn = "spawn_c") map_dfr(resps, function(resp) {
+  d <- model_data(resp, spawn = spawn) %>%
     group_by(beach) %>%
     mutate(res = zs(resid(lm(y ~ spawn_c + doy_c)))) %>%
     ungroup() %>%
@@ -223,6 +227,68 @@ if (!has_lb) {
                   res_lb$p_holm[res_lb$response == "log_yc1_next" & res_lb$predictor == "beuti_larval" & !res_lb$drop_kalaloch]),
           " vs pre-recruits: ", sprintf("%.2f (Holm p = %.3f)", res$estimate[res$response == "log_pre_next" & res$predictor == "beuti_larval" & res$trend & !res$drop_kalaloch],
                                         res$p_holm[res$response == "log_pre_next" & res$predictor == "beuti_larval" & res$trend & !res$drop_kalaloch]))
+}
+
+# ── Beach-level satellite SST (sensitivity vii; task T33) ───────────────────
+# Decision (2026-10-18): the regional homogenised buoy anomaly stays the a
+# priori SST predictor (declared before any clam correlation; the longest
+# record; carries a standard error). The OISST pixel (1982-) and MUR box (2002-)
+# off each beach are tested here over the same May-Sep window. In the pooled
+# model a beach-level predictor also carries within-year contrasts between
+# beaches, which a regional series cannot, so this is a different question as
+# well as a different measurement.
+SST_VARIANTS <- c(sst_larval = "SST anomaly May-Sep (Y): regional buoys (a priori)",
+                  sst_larval_oisst_beach = "SST anomaly May-Sep (Y): OISST pixel off each beach",
+                  sst_larval_mur_beach = "SST anomaly May-Sep (Y): MUR box off each beach")
+has_sat <- all(names(SST_VARIANTS) %in% names(cohort)) && any(!is.na(cohort$sst_larval_mur_beach))
+if (!has_sat) {
+  message("04 (vii): beach-level satellite SST not in cohort_table.csv; sensitivity skipped")
+} else {
+  cohort <- cohort %>% mutate(across(c(sst_larval_oisst_beach, sst_larval_mur_beach), zs, .names = "{.col}_z"))
+  sst_bl <- expand_grid(response = names(RESPONSES), predictor = names(SST_VARIANTS), trend = TRUE, drop_kalaloch = c(FALSE, TRUE)) %>%
+    pmap_dfr(function(response, predictor, trend, drop_kalaloch) fit_one(response, predictor, trend, drop_kalaloch)) %>%
+    mutate(predictor_label = unname(SST_VARIANTS[predictor]),
+           analysis = ifelse(drop_kalaloch, "excluding Kalaloch", "all beaches"),
+           first_year_class = map2_dbl(response, predictor, ~ min(cohort$year_class[!is.na(cohort[[.y]]) & !is.na(cohort[[.x]])])))
+  write_tab(sst_bl, "confirmatory_sst_beachlevel")
+  message("04 (vii): May-Sep SST on pre-recruits, all beaches: ",
+          paste(sprintf("%s %.2f (p = %.2f)", c("regional", "OISST beach", "MUR beach"),
+                        sst_bl$estimate[sst_bl$response == "log_pre_next" & !sst_bl$drop_kalaloch],
+                        sst_bl$p_lrt[sst_bl$response == "log_pre_next" & !sst_bl$drop_kalaloch]), collapse = ", "))
+}
+
+# ── Density instead of abundance (sensitivity viii; task T19) ───────────────
+# Abundance = density x habitat_m2, and habitat_m2 changes in steps within a
+# beach (up to 30% at Twin Harbors; tables/habitat_area_changes.csv), which
+# log abundance inherits as level shifts. Here the responses and the spawner
+# covariate are densities (clams per m2 of habitat at the survey concerned).
+has_hab <- all(c("habitat_next", "habitat_next2", "habitat_spawn") %in% names(cohort))
+if (!has_hab) {
+  message("04 (viii): habitat columns not in cohort_table.csv; density sensitivity skipped")
+} else {
+  cohort <- cohort %>%
+    mutate(log_pre_dens_next = log_pre_next - log(habitat_next),
+           log_rec_dens_next2 = log_rec_next2 - log(habitat_next2),
+           log_spawn_dens = log_spawners - log(habitat_spawn)) %>%
+    group_by(beach) %>% mutate(spawn_dens_c = log_spawn_dens - mean(log_spawn_dens, na.rm = TRUE)) %>% ungroup()
+  RESPONSES_DENS <- c(log_pre_dens_next = "Pre-recruit density at survey Y+1", log_rec_dens_next2 = "Recruit density at survey Y+2")
+  res_dens <- expand_grid(response = names(RESPONSES_DENS), predictor = names(PREDICTORS), trend = TRUE, drop_kalaloch = c(FALSE, TRUE)) %>%
+    pmap_dfr(function(response, predictor, trend, drop_kalaloch) fit_one(response, predictor, trend, drop_kalaloch, spawn = "spawn_dens_c")) %>%
+    group_by(drop_kalaloch) %>% mutate(p_holm = p.adjust(p_lrt, "holm"), p_bh = p.adjust(p_lrt, "BH")) %>% ungroup() %>%
+    mutate(analysis = ifelse(drop_kalaloch, "Density, excluding Kalaloch", "Density (trend + spawner density + survey date)"))
+  write_tab(res_dens, "confirmatory_pooled_density")
+  coast_dens <- coast_fit(names(RESPONSES_DENS), spawn = "spawn_dens_c") %>% mutate(p_holm = p.adjust(p, "holm"))
+  write_tab(coast_dens, "confirmatory_coastwide_density")
+  cmp_dens <- bind_rows(
+    res %>% filter(trend, !drop_kalaloch) %>% mutate(scale = "abundance"),
+    res_dens %>% filter(!drop_kalaloch) %>%
+      mutate(scale = "density", response = recode(response, log_pre_dens_next = "log_pre_next", log_rec_dens_next2 = "log_rec_next2"))) %>%
+    select(response, predictor, scale, estimate, lo, hi, p_lrt, p_holm) %>%
+    pivot_wider(names_from = scale, values_from = c(estimate, lo, hi, p_lrt, p_holm)) %>%
+    mutate(difference = estimate_density - estimate_abundance)
+  write_tab(cmp_dens, "confirmatory_density_vs_abundance")
+  message("04 (viii): largest |density - abundance| difference in an estimate: ", sprintf("%.3f", max(abs(cmp_dens$difference))),
+          " (", cmp_dens$predictor[which.max(abs(cmp_dens$difference))], ", ", cmp_dens$response[which.max(abs(cmp_dens$difference))], ")")
 }
 
 # ── Figures ─────────────────────────────────────────────────────────────────

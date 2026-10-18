@@ -30,24 +30,14 @@ season <- read_excel(file.path(DATA_DIR, "razor-clam-season-summary-1997-2025.xl
 stopifnot(!anyDuplicated(season[c("beach", "survey_year")]))
 
 # ── 2. Shell lengths: survey timing and size composition ────────────────────
-sl <- read_excel(file.path(DATA_DIR, "shell_length_data-summary",
-                           "All_Beaches_shell_lengths_1997-2025.xlsx"),
-                 sheet = "All_Clams_Raw", col_types = "text") %>%
-  mutate(survey_year = as.integer(survey_year),
-         length_mm   = as.numeric(length_mm),
-         # Three date encodings occur: ISO text, Excel serials, "11-Aug-2011"
-         date = case_when(
-           str_detect(date, "^\\d{4}-\\d{2}-\\d{2}$") ~ as.Date(date),
-           str_detect(date, "^\\d{5}$") ~ as.Date(as.numeric(date), origin = "1899-12-30"),
-           str_detect(date, "^\\d{1,2}-[A-Za-z]{3}-\\d{4}$") ~ as.Date(date, format = "%d-%b-%Y"),
-           TRUE ~ as.Date(NA)),
-         doy = yday(date))
+# From the corrected copy written by 00_correct_inputs.R (02_data/corrected/):
+# one ISO date column, year typos set to the survey year, lengths outside
+# 3-180 mm flagged and dropped by read_lengths(). The raw workbook is not read.
+sl <- read_lengths() %>% mutate(doy = yday(date))
 
 date_check <- sl %>% filter(!is.na(date), year(date) != survey_year)
-if (nrow(date_check) > 0) {
-  message("NOTE: ", nrow(date_check), " clams have date-year != survey_year; ",
-          "dates kept as recorded.")
-}
+if (nrow(date_check) > 0) stop(nrow(date_check), " shell-length records have date-year != survey_year after correction; ",
+                               "rerun step 00 and inspect 02_data/corrected/CHANGELOG.md")
 
 sl_by_year <- sl %>%
   group_by(beach, survey_year) %>%
@@ -216,6 +206,19 @@ cohort_predictors <- expand_grid(beach = BEACHES, year_class = 1988:2024) %>%
   ungroup() %>%
   unnest_wider(preds)
 
+# Beach-level satellite SST over the same May-Sep window (sensitivity vii in
+# 04_confirmatory_models.R; task T33, decided 2026-10-18): the OISST pixel
+# (1982-) and the MUR box (2002-) off each beach, from the external products.
+# The regional buoy anomaly (sst_larval) stays the a priori SST predictor.
+beach_slug <- function(b) gsub(" ", "_", tolower(b))
+window_mean_if <- function(env, var, ...) if (var %in% names(env)) window_mean(env, var, ...) else NA_real_
+sat_sst <- expand_grid(beach = BEACHES, year_class = 1988:2024) %>%
+  rowwise() %>%
+  mutate(sst_larval_oisst_beach = window_mean_if(env_monthly, paste0("oisst_anom_", beach_slug(beach)), year_class, rep(0, 5), 5:9),
+         sst_larval_mur_beach   = window_mean_if(env_monthly, paste0("mur_anom_", beach_slug(beach)), year_class, rep(0, 5), 5:9)) %>%
+  ungroup()
+cohort_predictors <- cohort_predictors %>% left_join(sat_sst, by = c("beach", "year_class"))
+
 # ── 5. Cohort table ─────────────────────────────────────────────────────────
 sv <- survey %>% mutate(beach = as.character(beach)) %>%
   select(beach, survey_year, pre_recruits, recruits, survey_doy, p_pre_lt30, habitat_m2)
@@ -224,13 +227,14 @@ cohort <- cohort_predictors %>%
   # pre-recruits of year class Y are counted at survey Y+1
   left_join(sv %>% transmute(beach, year_class = survey_year - 1L,
                              pre_next = pre_recruits, doy_next = survey_doy,
-                             p_lt30_next = p_pre_lt30),
+                             p_lt30_next = p_pre_lt30, habitat_next = habitat_m2),
             by = c("beach", "year_class")) %>%
   # the same year class is mostly recruited by survey Y+2
-  left_join(sv %>% transmute(beach, year_class = survey_year - 2L, rec_next2 = recruits),
+  left_join(sv %>% transmute(beach, year_class = survey_year - 2L, rec_next2 = recruits, habitat_next2 = habitat_m2),
             by = c("beach", "year_class")) %>%
-  # spawning stock: recruits present at survey Y
-  left_join(sv %>% transmute(beach, year_class = survey_year, spawners = recruits),
+  # spawning stock: recruits present at survey Y (habitat areas carried for the
+  # density sensitivity, task T19: abundance = density x habitat_m2)
+  left_join(sv %>% transmute(beach, year_class = survey_year, spawners = recruits, habitat_spawn = habitat_m2),
             by = c("beach", "year_class")) %>%
   mutate(beach = factor(beach, levels = BEACHES),
          log_pre_next  = log(pre_next),
@@ -239,6 +243,22 @@ cohort <- cohort_predictors %>%
   arrange(beach, year_class)
 
 write_csv(cohort, file.path(DERIVED, "cohort_table.csv"))
+
+# ── 6. Assertions (task T30): fail loudly if an input changed shape ─────────
+check <- function(cond, msg) if (!isTRUE(cond)) stop("01_build_datasets assertion failed: ", msg, call. = FALSE)
+check(!anyDuplicated(survey[c("beach", "survey_year")]), "duplicated beach x survey_year in survey_beach_year")
+check(nrow(survey) == length(BEACHES) * n_distinct(survey$survey_year), "survey_beach_year is not a complete beach x year grid")
+check(all(survey$survey_year >= 1997 & survey$survey_year <= 2035), "survey_year outside 1997-2035")
+check(all(survey$pre_recruits > 0 & survey$recruits > 0, na.rm = TRUE), "non-positive abundance estimate")
+check(all(survey$habitat_m2 > 1e6 & survey$habitat_m2 < 1e7, na.rm = TRUE), "habitat_m2 outside 1-10 million m2")
+check(all(survey$survey_doy >= 90 & survey$survey_doy <= 250), "median survey day of year outside April-September")
+check(sum(survey$survey_doy_imputed) <= 3, "more than 3 beach-years with imputed survey dates (new undated beach-years?)")
+check(!anyDuplicated(env_monthly[c("year", "month")]), "duplicated year x month in env_monthly")
+check(all(env_monthly$month %in% 1:12) && all(env_monthly$year >= 1980), "env_monthly year/month out of range")
+check(nrow(cohort) == length(BEACHES) * length(1988:2024), "cohort_table is not a complete beach x year-class grid")
+check(!anyDuplicated(cohort[c("beach", "year_class")]), "duplicated beach x year_class in cohort_table")
+check(sum(!is.na(cohort$log_pre_next)) >= 130 && sum(!is.na(cohort$beuti_larval)) >= 150, "too few responses or BEUTI predictor values in cohort_table")
+check(all(abs(cohort$beuti_larval) < 50, na.rm = TRUE) && all(abs(cohort$sst_larval) < 5, na.rm = TRUE), "predictor values outside plausible ranges")
 
 message("01_build_datasets: wrote survey_beach_year.csv (", nrow(survey), " rows), ",
         "env_monthly.csv (", nrow(env_monthly), "), cohort_table.csv (", nrow(cohort), ")")

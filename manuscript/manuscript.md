@@ -70,6 +70,7 @@ An initial exploratory analysis of these data suggested that upwelling during th
 ### 2.2 Survey timing and year-class alignment
 
 - **Survey timing.** We computed the median date of measured clams for each beach-year. Two beach-years without usable dates (Kalaloch 2001; Copalis 2003, which has no length records) were assigned the beach median. Trends in survey day of year were estimated by least squares.
+- **Data corrections.** The 218,101 length records carried dates in three encodings, and 711 records in six beach-years carried a year that differed from the survey year (one of them 2028) while their month-day fell inside the window of correctly dated records of the same survey; we parsed the dates to one encoding and set those years to the survey year in a corrected copy of the file, leaving the source untouched and logging every change (`02_data/corrected/CHANGELOG.md`). Three records with lengths outside 3–180 mm were excluded. The 910 Kalaloch 2001 records have no date in the source and received that beach's median survey date. No correction changed a median survey date.
 - **Length composition.** We examined length-frequency distributions grouped by survey timing (before 15 June, 15 June–15 July, after 15 July).
 - **Cohort linkage.** We tested whether pre-recruits counted in year t predict recruits counted in year t+1.
 - **Year class Y.** On this basis we defined year class Y as the cohort spawned and settling in summer Y, counted as pre-recruits at survey Y+1 and largely as recruits at survey Y+2. All environmental windows were defined relative to Y.
@@ -134,7 +135,9 @@ All analyses used log abundance. Pre-recruit and recruit abundance were never ze
   3. a coastwide index, the mean across beaches of within-beach standardised residuals of log abundance on spawners and survey day, regressed on trend and predictor with AR(1) errors by generalised least squares;
   4. beach-specific GLS-AR(1) models;
   5. all five predictors in one model;
-  6. the length-based year classes (the year-old cohort at survey Y+1 and the two-year-olds at survey Y+2, Section 2.2) in place of the size classes, with Holm adjustment within that set of 10 tests and the same covariates.
+  6. the length-based year classes (the year-old cohort at survey Y+1 and the two-year-olds at survey Y+2, Section 2.2) in place of the size classes, with Holm adjustment within that set of 10 tests and the same covariates;
+  7. beach-level satellite SST in place of the regional buoy anomaly: the NOAA OISST pixel (0.25°, from 1982) and the JPL MUR box (1 km, from 2002) off each beach over the same May–September window, which in the pooled model also carry within-year contrasts between beaches;
+  8. density in place of abundance: the estimates divided by the habitat area used to expand them (which changes in steps within every beach, by up to 30% at Twin Harbors), for the responses and the spawner covariate alike.
 - *BEUTI robustness.* For BEUTI we additionally used loess detrending, first differences, leave-one-year-out refits, removal of the most influential year, and CUTI over the same window as a transport-only analogue.
 
 **(c) Calibrated exploratory window scan.**
@@ -157,7 +160,7 @@ All analyses used log abundance. Pre-recruit and recruit abundance were never ze
 
 - A fixed protocol (`docs/forecast-protocol.md`) issues forecasts for the next survey year with prediction intervals, from models fixed in advance (for pre-recruits: climatology, trend, the a priori BEUTI model, and the exploratory candidate selected on the data available at issue; for recruits: climatology, persistence, the carry-over model, and the carry-over model with the harvest taken between the surveys removed), records them in a ledger with the issue date, code version and data vintage, and scores them on the log scale (error, 95% interval coverage, CRPS, skill versus climatology) when the estimates arrive. Rows are never overwritten.
 
-**Software.** Analyses used R 4.3.3 (R Core Team 2024 **[C]**) with tidyverse, nlme (Pinheiro & Bates **[C]**) and lme4. Code and derived data are in the accompanying repository (`01_code/R/`, `02_data/derived/`); the full pipeline runs in about 8 minutes, and random seeds are fixed.
+**Software.** Analyses used R 4.3.3 (R Core Team 2024 **[C]**) with tidyverse, nlme (Pinheiro & Bates **[C]**) and lme4 (versions recorded in the repository's `renv.lock`). Code and derived data are in the accompanying repository (`01_code/R/`, `02_data/derived/`); the full pipeline runs in about 9 minutes, random seeds are fixed, and a continuous-integration workflow reruns it and checks a set of key numbers against recorded values on every change.
 
 ## 3. Results
 
@@ -230,6 +233,10 @@ All analyses used log abundance. Pre-recruit and recruit abundance were never ze
 - Only freshet discharge (Apr–Jun Y) was nominally associated: +0.18 log units per SD (0.05–0.32; p = 0.011; Holm p = 0.11), coastwide +0.30 ± 0.12 (p = 0.015; Holm p = 0.13).
 - The association weakened when Kalaloch was excluded (+0.10, p = 0.12).
 - In the full model with all five predictors, the estimates were similar: BEUTI −0.47 (t = −1.90) for pre-recruits and discharge +0.21 (t = 2.82) for recruits [`confirmatory_full_model.csv`].
+
+**Beach-level satellite SST (sensitivity vii)** [`confirmatory_sst_beachlevel.csv`]. Replacing the regional buoy anomaly with the OISST pixel or the MUR box off each beach did not change the null SST result: on pre-recruits +0.04 per SD (p = 0.70) and +0.10 (p = 0.52) against +0.05 (p = 0.71) for the regional series; on recruits −0.05 to +0.05 (p ≥ 0.44); the same without Kalaloch. Beach-level temperature therefore adds nothing that the regional series missed, including within-year differences between beaches.
+
+**Density instead of abundance (sensitivity viii)** [`confirmatory_density_vs_abundance.csv`, `habitat_area_changes.csv`]. On the density scale no estimate moved by more than 0.013 log units per SD: BEUTI on pre-recruits was −0.30 (coastwide −0.61 ± 0.20, Holm p = 0.055) and freshet discharge on recruits +0.20 (p = 0.006, Holm p = 0.06). The step changes in habitat area do not drive any result.
 
 **Length-based year classes (sensitivity vi)** (Fig. 18) [`confirmatory_pooled_lengthbased.csv`, `confirmatory_coastwide_lengthbased.csv`]. With the year-old cohort of Section 3.2 in place of the pre-recruit class, the BEUTI association was the same in sign and size and slightly stronger: pooled −0.39 log units per SD (−0.78 to +0.00; p = 0.065; Holm p = 0.65), excluding Kalaloch −0.41 (−0.72 to −0.11; p = 0.010; Holm p = 0.10), coastwide −0.70 ± 0.19 (p = 0.001; Holm p = 0.014). No other predictor approached significance (SST +0.21, p = 0.13; winter CUTI +0.20, p = 0.17; PDO and discharge p ≥ 0.6). With the two-year-olds in place of the recruit class, BEUTI was −0.26 (p = 0.13; coastwide −0.38 ± 0.15, p = 0.018, Holm p = 0.17), and the freshet-discharge association of the recruit class disappeared (+0.05, p = 0.64; coastwide +0.08, p = 0.34): that association belongs to the mixed-age recruit class, which includes the fast year-olds and the older clams, not to the two-year-old cohort.
 

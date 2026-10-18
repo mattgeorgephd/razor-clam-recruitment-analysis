@@ -8,7 +8,8 @@ All analysis code. Run everything from the **repository root** (the folder with 
 
 | Script | Purpose | Main outputs |
 |---|---|---|
-| `00_config.R` | Paths, constants (beaches, SST buoys, seed, surrogate count), plot theme, helpers. Sourced by every script | none |
+| `00_config.R` | Paths, constants (beaches, SST buoys, growth curve, seed, surrogate count), plot theme, helpers including `read_lengths()`. Sourced by every script | none |
+| `00_correct_inputs.R` | Corrected copies of raw inputs: parses the three date encodings of the shell-length records to one ISO column, sets six groups of year typos to the survey year, flags out-of-range lengths, and writes a changelog with the evidence for every rule. The raw workbooks are never edited | `02_data/corrected/shell_lengths_corrected.csv.gz`, `CHANGELOG.md` |
 | `01_build_datasets.R` | Parses abundance, shell lengths (3 date encodings), upwelling, discharge, PDO and a homogeneous regional SST anomaly. Defines the **five pre-specified, cohort-aligned predictors** | `02_data/derived/survey_beach_year.csv`, `env_monthly.csv`, `cohort_table.csv` |
 | `lib_cohort_mixture.R` | Growth-curve-informed normal mixture for one survey's lengths (MAP-EM with bounded component means): current-year settlers, the year-old cohort (slow, main and, where the data support it, fast components), two-year-olds, older. Shared helper | none |
 | `01b_cohort_separation.R` | Fits the mixture to every beach-year and applies the cohort shares to total abundance: **length-based year classes** beside the 76 mm size classes (`yc1_next`, `yc2_next2`, `yc0_settlers` added to `cohort_table.csv`) | `02_data/derived/cohort_lengths.csv`, `cohort_table.csv`; `cohort_separation_by_year` |
@@ -25,11 +26,12 @@ All analysis code. Run everything from the **repository root** (the folder with 
 | `09_env_record_diagnostics.R` | Coverage of every environmental source; legacy IDW blend vs homogenised anomaly (station-era offsets); alternative SST constructions (buoys, OISST, MUR) and their effect on the SST test; station parameters with leave-one-out checks; BEUTI/CUTI trend, 2011 step and breakpoint tests; cross-index correlations; cached vs current index vintages with the pre-specified tests refitted under each; satellite vs buoy agreement by beach; buoy winds and waves vs the upwelling indices; lower-Columbia gauges | `fig_env_coverage`, `fig_legacy_idw_vs_homogenized`, `fig_sst_homogenization`, `fig_beuti_homogeneity`, `fig_index_vintages`, `fig_wind_vs_upwelling`; `env_*` |
 | `10_report.R` | Compiles key results, all figures and all tables into `report.md`, and `report.html` when pandoc is available (PATH, or RStudio's copy via rmarkdown) | `report.md`, `report.html` |
 | `run_all.R` | Batch runner: argument parsing, dependency check, fresh environment per step, logging (`run_log.txt`, `run_info.txt`, `sessionInfo.txt`), optional legacy-notebook run | none |
+| `tests/check_outputs.R` | Regression checks: required derived tables, outputs and figures exist; a curated set of key numbers (`tests/expected_key_numbers.csv`, with a tolerance and a note per number) matches; the forecast ledger has not shrunk. Non-zero exit on failure; run by `.github/workflows/pipeline.yml`. `--write-expected` refreshes the expected values after a deliberate change | none |
 | `acquire/` | Fetch scripts for external products (OISST, MUR, NDBC winds/waves, lower-Columbia gauges, current BEUTI/CUTI/PDO vintages); run 2026-10-02, outputs committed; see `acquire/README.md` | `02_data/Environmental Data/external/` |
 
 Figures are in `03_analyses/robust-reanalysis/figures/` (PNG, 300 dpi); tables are in `.../tables/` (CSV).
 
-**Packages:** tidyverse, readxl, lubridate, nlme, lme4, here, maps, mapdata (checked by `run_all.R`; `--install` installs missing ones). Optional: pandoc for `report.html`; knitr, openxlsx, scales, corrplot, patchwork, sf, jsonlite for `--notebook`; rerddap, dataRetrieval, ncdf4 and network access for `acquire/`.
+**Packages:** tidyverse, readxl, lubridate, nlme, lme4, here, maps, mapdata (checked by `run_all.R`; `--install` installs missing ones). Optional: pandoc for `report.html`; knitr, openxlsx, scales, corrplot, patchwork, sf, jsonlite for `--notebook`; rerddap, dataRetrieval, ncdf4 and network access for `acquire/`. The repository root holds `DESCRIPTION` (the same lists as Imports and Suggests) and `renv.lock` (the exact versions behind the committed outputs, R 4.3.3): `renv::restore()` reproduces that library; renv is not activated for the project, so the pipeline runs with whatever library is on the path.
 
 ## `razor-clam-recruitment-analysis.Rmd`: legacy exploratory notebook
 

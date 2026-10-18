@@ -56,12 +56,8 @@ p_timing <- survey %>%
 save_fig(p_timing, "fig_survey_timing", 8, 5)
 
 # ── (b) Length-frequency by survey timing ───────────────────────────────────
-sl <- read_excel(file.path(DATA_DIR, "shell_length_data-summary",
-                           "All_Beaches_shell_lengths_1997-2025.xlsx"),
-                 sheet = "All_Clams_Raw", col_types = "text") %>%
-  transmute(beach = factor(beach, levels = BEACHES),
-            survey_year = as.integer(survey_year),
-            length_mm = as.numeric(length_mm)) %>%
+sl <- read_lengths() %>%
+  transmute(beach = factor(beach, levels = BEACHES), survey_year, length_mm) %>%
   left_join(survey %>% select(beach, survey_year, survey_doy), by = c("beach", "survey_year")) %>%
   mutate(timing = cut(survey_doy, c(0, 166, 196, 366),
                       labels = c("before 15 Jun", "15 Jun - 15 Jul", "after 15 Jul")))
@@ -152,6 +148,13 @@ abund_summary <- survey %>% filter(!is.na(pre_recruits)) %>%
             max_millions = max(value) / 1e6, max_min_ratio = max(value) / min(value),
             sd_log = sd(log(value)), .groups = "drop")
 write_tab(abund_summary, "abundance_summary")
+
+# habitat area used to expand density to abundance changes in steps (task T19)
+habitat_changes <- survey %>% filter(!is.na(habitat_m2)) %>% arrange(beach, survey_year) %>% group_by(beach) %>%
+  summarise(n_distinct_values = n_distinct(habitat_m2), min_m2 = min(habitat_m2), max_m2 = max(habitat_m2),
+            max_over_min = max(habitat_m2) / min(habitat_m2),
+            change_years = paste(survey_year[which(habitat_m2 != lag(habitat_m2))], collapse = ", "), .groups = "drop")
+write_tab(habitat_changes, "habitat_area_changes")
 
 sync_summary <- map_dfr(c("pre_recruits", "recruits"), function(v) map_dfr(c(FALSE, TRUE), function(dt) {
   m <- sync(v, detrend = dt) %>% select(-beach) %>% as.matrix()

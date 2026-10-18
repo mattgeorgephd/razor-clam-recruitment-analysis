@@ -13,3 +13,7 @@
 02_data/Environmental Data/external/raw/
 03_analyses/robust-reanalysis-vintage-current/
 03_analyses/robust-reanalysis-vintage-cached/
+
+# renv is not activated for this project; renv.lock is committed, a local project library is not
+renv/
+.Rprofile

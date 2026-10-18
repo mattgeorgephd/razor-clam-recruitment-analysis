@@ -850,8 +850,10 @@ if (!is.null(pdo_monthly)) {
 # Dataset: saturn02_3500_P_CT (conductivity-temperature instrument).
 
 # FIX (2026-10): only attempt the SATURN-02 download when salinity is in use.
-# NOTE: the download methods below disable TLS verification (curl -k); prefer
-# downloading manually and placing the file at saturn02_cache.
+# FIX (2026-10-18, task T25): the download keeps TLS certificate verification
+# on; the earlier fallbacks that skipped it are gone. If the ERDDAP certificate
+# is rejected, download the file with a verified client and place it at
+# saturn02_cache; the script reads the cache first.
 if (use_salinity) {
 cat("\n--- Downloading SATURN-02 salinity from CMOP ERDDAP ---\n")
 
@@ -901,43 +903,30 @@ saturn02_sal <- if (file.exists(saturn02_cache)) {
   result <- NULL
   tmp <- tempfile(fileext = ".csv")
   
-  # Method 1: system curl with -k (skip SSL verification)
+  # Method 1: download.file with the curl method (certificate verification on)
   if (is.null(result)) {
     result <- tryCatch({
-      cat("  Method 1: system curl -k (skip SSL verify)...\n")
-      cmd <- sprintf('curl -k -s -o "%s" "%s"', tmp, erddap_url)
-      exit_code <- system(cmd)
-      if (exit_code != 0) stop("curl returned exit code ", exit_code)
-      if (!file.exists(tmp) || file.size(tmp) < 100) stop("Downloaded file is empty or missing")
-      process_saturn02_raw(tmp)
-    }, error = function(e) { cat("    Failed:", conditionMessage(e), "\n"); NULL })
-  }
-  
-  # Method 2: download.file with curl method (uses R's curl binding)
-  if (is.null(result)) {
-    result <- tryCatch({
-      cat("  Method 2: download.file (curl method)...\n")
-      download.file(erddap_url, tmp, mode = "w", quiet = TRUE, method = "curl",
-                    extra = "-k")  # -k = insecure, skips SSL verify
+      cat("  Method 1: download.file (curl method)...\n")
+      download.file(erddap_url, tmp, mode = "w", quiet = TRUE, method = "curl")
       if (!file.exists(tmp) || file.size(tmp) < 100) stop("Downloaded file is empty")
       process_saturn02_raw(tmp)
     }, error = function(e) { cat("    Failed:", conditionMessage(e), "\n"); NULL })
   }
   
-  # Method 3: download.file with wininet (Windows only — uses OS SSL stack)
+  # Method 2: download.file with wininet (Windows only; uses the OS TLS stack)
   if (is.null(result) && .Platform$OS.type == "windows") {
     result <- tryCatch({
-      cat("  Method 3: download.file (wininet method, Windows SSL)...\n")
+      cat("  Method 2: download.file (wininet method, Windows SSL)...\n")
       download.file(erddap_url, tmp, mode = "w", quiet = TRUE, method = "wininet")
       if (!file.exists(tmp) || file.size(tmp) < 100) stop("Downloaded file is empty")
       process_saturn02_raw(tmp)
     }, error = function(e) { cat("    Failed:", conditionMessage(e), "\n"); NULL })
   }
   
-  # Method 4: Direct read.csv (R's internal HTTP/SSL)
+  # Method 3: Direct read.csv (R's internal HTTP/SSL)
   if (is.null(result)) {
     result <- tryCatch({
-      cat("  Method 4: read.csv (R internal SSL)...\n")
+      cat("  Method 3: read.csv (R internal SSL)...\n")
       process_saturn02_raw(erddap_url)
     }, error = function(e) { cat("    Failed:", conditionMessage(e), "\n"); NULL })
   }
@@ -945,9 +934,9 @@ saturn02_sal <- if (file.exists(saturn02_cache)) {
   unlink(tmp)
   
   if (is.null(result)) {
-    cat("\n  ALL download methods failed (SSL issue with data.stccmop.org).\n")
-    cat("  MANUAL FIX — run this in a system terminal (not R), then re-run script:\n")
-    cat('  curl -k "', erddap_url, '" -o saturn02_raw.csv\n', sep = "")
+    cat("\n  ALL download methods failed (TLS or network issue with data.stccmop.org).\n")
+    cat("  MANUAL FIX: download the file with a verified client, then re-run the script:\n")
+    cat('  curl "', erddap_url, '" -o saturn02_raw.csv\n', sep = "")
     cat("  Then in R:\n")
     cat('  raw <- read.csv("saturn02_raw.csv", skip = 1)\n')
     cat('  # ... or just copy saturn02_raw.csv to:\n')

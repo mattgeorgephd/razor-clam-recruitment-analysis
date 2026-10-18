@@ -56,6 +56,8 @@ One row per beach × year class Y (1988–2024). Year class Y is spawned and set
 | `yc1_next`, `log_yc1_next`, `n_lengths_next`, `separation_flag_next` | Length-based: the year-old cohort of year class Y at survey Y+1 (settler-free, including its fast tail above 76 mm), from the mixture of `01b_cohort_separation.R`; the number of measured clams behind it and a flag (`ok`, `few lengths` <150, `poor fit` KS >0.08) |
 | `yc2_next2`, `log_yc2_next2`, `n_lengths_next2` | Length-based: two-year-olds of year class Y at survey Y+2 |
 | `yc0_settlers`, `log_yc0_settlers` | Length-based: current-year settlers of year class Y at the survey of year Y, only where that survey is on or after 1 July (NA otherwise) |
+| `sst_larval_oisst_beach`, `sst_larval_mur_beach` | Beach-level satellite SST anomaly, May–Sep of Y, at the OISST pixel (from 1982) and the MUR box (from 2002) off the beach; sensitivity vii in step 04 (task T33), not a priori predictors |
+| `habitat_next`, `habitat_next2`, `habitat_spawn` | Habitat area (m²) used to expand density to abundance at surveys Y+1, Y+2 and Y; abundance / habitat gives the density responses of sensitivity viii (task T19) |
 
 The five predictors were fixed before any correlation with clam data was examined; rationale in `docs/methodology-review.md` §5.2. Window means require ≥75% of months to be present. The `yc*` columns are a sensitivity arm (task T14): the size-class columns remain the primary responses.
 

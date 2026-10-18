@@ -110,6 +110,21 @@ MIX_T0 <- c(Kalaloch = -0.25, Mocrocks = VB_T0, Copalis = VB_T0, `Twin Harbors` 
 MIX_FAST_TAIL <- c(Kalaloch = FALSE, Mocrocks = TRUE, Copalis = TRUE, `Twin Harbors` = TRUE, `Long Beach` = TRUE)
 mix_length <- function(beach, age) vb_length(beach, age, K = MIX_K[beach], t0 = MIX_T0[beach])
 
+# Shell-length records: the corrected copy written by 00_correct_inputs.R
+# (02_data/corrected/; one ISO date column, year typos fixed, flags). The raw
+# workbook is never read by the pipeline steps after 00.
+LENGTHS_FILE <- file.path(DATA_DIR, "corrected", "shell_lengths_corrected.csv.gz")
+read_lengths <- function(ok_only = TRUE) {
+  if (!file.exists(LENGTHS_FILE)) stop("Corrected shell-length file not found (", LENGTHS_FILE,
+                                       "). Run step 00: Rscript 01_code/R/00_correct_inputs.R")
+  x <- readr::read_csv(LENGTHS_FILE, show_col_types = FALSE, progress = FALSE,
+                       col_types = readr::cols(.default = readr::col_character(), row_id = readr::col_integer(),
+                                               survey_year = readr::col_integer(), date = readr::col_date(),
+                                               date_year_corrected = readr::col_logical(), length_mm = readr::col_double()))
+  if (ok_only) x <- x[x$length_flag == "ok", ]
+  x
+}
+
 SEED <- 20261002
 # Surrogate series for permutation / null calibration. run_all.R --fast sets
 # RC_N_SURROGATES=200 (about 1 min instead of 1.5); p-values are then coarser.

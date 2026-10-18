@@ -1,0 +1,42 @@
+Package: razorclamrecruitment
+Title: Pacific Razor Clam Recruitment and Ocean Conditions on the Washington Coast, 1997-2024
+Version: 0.3.0
+Description: Reproducible re-analysis pipeline (01_code/R/, run with ./run_pipeline.sh) for
+    the relationship between Washington coast razor clam year-class strength and ocean
+    conditions, with a manuscript in preparation. This file lists the R packages the
+    pipeline needs (Imports) and those the legacy notebook and the data-acquisition
+    scripts need (Suggests); renv.lock records the exact versions the committed outputs
+    were produced with.
+Encoding: UTF-8
+Depends:
+    R (>= 4.3)
+Imports:
+    here,
+    tidyverse,
+    dplyr,
+    tidyr,
+    purrr,
+    readr,
+    stringr,
+    ggplot2,
+    tibble,
+    readxl,
+    lubridate,
+    nlme,
+    lme4,
+    maps,
+    mapdata
+Suggests:
+    openxlsx,
+    knitr,
+    rmarkdown,
+    scales,
+    corrplot,
+    patchwork,
+    sf,
+    jsonlite,
+    rerddap,
+    dataRetrieval,
+    ncdf4,
+    httr2,
+    renv

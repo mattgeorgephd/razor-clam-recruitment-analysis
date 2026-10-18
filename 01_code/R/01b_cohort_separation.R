@@ -28,10 +28,7 @@ source(here::here("01_code", "R", "00_config.R"))
 source(here::here("01_code", "R", "lib_cohort_mixture.R"))
 
 survey <- read_csv(file.path(DERIVED, "survey_beach_year.csv"), show_col_types = FALSE)
-sl <- read_excel(file.path(DATA_DIR, "shell_length_data-summary", "All_Beaches_shell_lengths_1997-2025.xlsx"),
-                 sheet = "All_Clams_Raw", col_types = "text") %>%
-  transmute(beach = as.character(beach), survey_year = as.integer(survey_year), length_mm = as.numeric(length_mm)) %>%
-  filter(!is.na(length_mm))
+sl <- read_lengths() %>% transmute(beach = as.character(beach), survey_year, length_mm)
 
 fits <- sl %>% group_by(beach, survey_year) %>%
   summarise(lengths = list(length_mm), .groups = "drop") %>%
@@ -49,6 +46,12 @@ fits <- sl %>% group_by(beach, survey_year) %>%
          abundance_share_pre = pre_recruits / N_total,
          share_gap = share_measured_pre - abundance_share_pre) %>%
   arrange(factor(beach, BEACHES), survey_year)
+
+# assertions (task T30): every fitted survey's cohort shares sum to one, and no
+# year-class abundance is non-positive
+ok <- fits$fitted %in% TRUE
+stopifnot(all(abs(fits$w_settler[ok] + fits$w_age1[ok] + fits$w_age2[ok] + fits$w_age3plus[ok] - 1) < 1e-6),
+          all(fits$N_age1[ok] > 0 | is.na(fits$N_age1[ok])), all(fits$N_age2[ok] > 0 | is.na(fits$N_age2[ok])))
 
 write_csv(fits %>% select(-components), file.path(DERIVED, "cohort_lengths.csv"))
 write_tab(fits %>% select(-components), "cohort_separation_by_year")

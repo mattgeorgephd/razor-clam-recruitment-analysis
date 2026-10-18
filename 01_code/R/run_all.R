@@ -28,17 +28,19 @@
 # Exit status is non-zero if any step fails. Each run appends to <out>/run_log.txt
 # and overwrites <out>/run_info.txt and <out>/sessionInfo.txt.
 #
-# Steps communicate only through files (02_data/derived/, <out>/tables, <out>/figures),
-# so any step can be rerun alone once 01 has produced the derived tables.
+# Steps communicate only through files (02_data/corrected/, 02_data/derived/,
+# <out>/tables, <out>/figures), so any step can be rerun alone once 00 and 01
+# have produced the corrected inputs and the derived tables.
 
 # ── Step registry (order matters: 10 compiles what 01–09 produce) ───────────
 STEPS <- data.frame(
-  id   = c("01", "01b", "02", "03", "04", "05", "06", "07", "08", "09", "10"),
-  file = c("01_build_datasets.R", "01b_cohort_separation.R", "02_cohort_diagnostics.R", "03_null_audit.R",
+  id   = c("00", "01", "01b", "02", "03", "04", "05", "06", "07", "08", "09", "10"),
+  file = c("00_correct_inputs.R", "01_build_datasets.R", "01b_cohort_separation.R", "02_cohort_diagnostics.R", "03_null_audit.R",
            "04_confirmatory_models.R", "05_window_scan.R", "06_forecast_skill.R",
            "07_figures_overview.R", "08_forecast_protocol.R",
            "09_env_record_diagnostics.R", "10_report.R"),
-  what = c("Parse raw inputs; derived tables; pre-specified cohort-aligned predictors",
+  what = c("Corrected copies of raw inputs (shell-length dates, flags) with a changelog in 02_data/corrected/",
+           "Parse raw inputs; derived tables; pre-specified cohort-aligned predictors",
            "Year-class abundances from the shell lengths (growth-curve-informed mixture); adds yc columns to cohort_table",
            "Survey timing, length-frequency, cohort linkage, synchrony, trends",
            "Surrogate-null audit of the original screening grid",

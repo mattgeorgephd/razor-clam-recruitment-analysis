@@ -60,6 +60,9 @@ Outputs of `./run_pipeline.sh` (`01_code/R/run_all.R`). Do not edit by hand; rer
 | `confirmatory_beuti_robustness.csv` | 04 | BEUTI and CUTI under linear/loess detrending, first differences, leave-one-out, without the most influential year, post-2003 |
 | `confirmatory_predictor_correlations.csv` | 04 | Correlations among predictors and with year |
 | `confirmatory_pooled_lengthbased.csv`, `confirmatory_coastwide_lengthbased.csv` | 04 | The pre-specified tests with the length-based year classes as responses (sensitivity vi), Holm within that set |
+| `confirmatory_sst_beachlevel.csv` | 04 | May-Sep SST as the regional buoy anomaly (a priori) and as the OISST pixel and MUR box off each beach (sensitivity vii, task T33) |
+| `confirmatory_pooled_density.csv`, `confirmatory_coastwide_density.csv`, `confirmatory_density_vs_abundance.csv` | 04 | The pre-specified tests on the density scale (clams per m2 of habitat; sensitivity viii, task T19) and each estimate beside its abundance-scale counterpart |
+| `habitat_area_changes.csv` | 02 | Habitat area used to expand density to abundance: distinct values, range and change years by beach |
 | `window_scan_summary.csv`, `window_scan_best_per_variable.csv`, `window_scan_top10.csv`, `window_scan_all.csv` | 05 | Scan results with naive p, BH q, family-wise p; raw r and r with year beside the detrended r |
 | `window_scan_trend_attribution.csv` | 05 | Strongest undetrended window per series, split into trend (r with year) and what remains after detrending |
 | `forecast_skill_original_framework.csv`, `forecast_skill_original_by_series.csv` | 06 | Skill vs climatology for leaky/honest selection, persistence, carry-over |
