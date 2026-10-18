@@ -1,28 +1,28 @@
 id,table,filter,column,expected,tolerance,note
-ledger_rows_min,forecast_ledger,,,0,0,the ledger must never shrink (its row count is the expected value)
-timing_long_beach,survey_timing_by_beach,beach == "Long Beach",median_doy,0,0,median survey day of year; exact
-timing_twin_harbors,survey_timing_by_beach,beach == "Twin Harbors",median_doy,0,0,median survey day of year; exact
-linkage_pre_rec_copalis,cohort_linkage,beach == "Copalis",r_pre_t_rec_t1,0,1e-6,size-class cohort linkage; deterministic
-linkage_pre_rec_twin_harbors,cohort_linkage,beach == "Twin Harbors",r_pre_t_rec_t1,0,1e-6,size-class cohort linkage; deterministic
-linkage_age1_age2_long_beach,cohort_linkage,beach == "Long Beach",r_age1_t_age2_t1,0,1e-3,length-based linkage; EM fits are deterministic but platform numerics may move the last digits
-linkage_age1_age2_kalaloch,cohort_linkage,beach == "Kalaloch",r_age1_t_age2_t1,0,1e-2,length-based linkage at the beach with the most fragile fits
-share_age1_above_76_all,cohort_separation_summary,beach == "All beaches",mean_share_age1_above_76,0,1e-3,share of the year-old cohort above 76 mm
-growth_k_tracking_copalis,cohort_growth_increments_summary,beach == "Copalis",K_tracking_Linf_fixed,0,1e-3,growth coefficient from year-class tracking at the study beach
-growth_k_tracking_kalaloch,cohort_growth_increments_summary,beach == "Kalaloch",K_tracking_Linf_fixed,0,1e-3,growth coefficient from year-class tracking at Kalaloch
-null_audit_sig_cells,null_audit_global,,observed_sig_p05,0,0,count of nominally significant cells in the legacy screen; exact
-null_audit_p_global,null_audit_global,,p_global,0,0.02,surrogate-based global p; Monte Carlo tolerance
-beuti_pooled_estimate,confirmatory_pooled,"response == ""log_pre_next"" & predictor == ""beuti_larval"" & trend & !drop_kalaloch",estimate,0,1e-3,primary a priori BEUTI effect on pre-recruits (pooled LMM)
-beuti_pooled_p_lrt,confirmatory_pooled,"response == ""log_pre_next"" & predictor == ""beuti_larval"" & trend & !drop_kalaloch",p_lrt,0,1e-3,its LRT p
-beuti_coastwide_estimate,confirmatory_coastwide_index,"response == ""log_pre_next"" & predictor == ""beuti_larval""",estimate,0,1e-3,coastwide GLS-AR(1) BEUTI effect
-beuti_coastwide_p_holm,confirmatory_coastwide_index,"response == ""log_pre_next"" & predictor == ""beuti_larval""",p_holm,0,1e-3,its Holm p
-beuti_lengthbased_coastwide,confirmatory_coastwide_lengthbased,"response == ""log_yc1_next"" & predictor == ""beuti_larval""",estimate,0,1e-2,BEUTI effect on the length-based year-old cohort
-sst_regional_pooled,confirmatory_sst_beachlevel,"response == ""log_pre_next"" & predictor == ""sst_larval"" & !drop_kalaloch",estimate,0,1e-3,regional SST effect (a priori) in the beach-level comparison
-sst_mur_beach_pooled,confirmatory_sst_beachlevel,"response == ""log_pre_next"" & predictor == ""sst_larval_mur_beach"" & !drop_kalaloch",estimate,0,1e-3,MUR beach-level SST effect
-beuti_density_pooled,confirmatory_pooled_density,"response == ""log_pre_dens_next"" & predictor == ""beuti_larval"" & !drop_kalaloch",estimate,0,1e-3,BEUTI effect on the density scale
-scan_pre_n_windows,window_scan_summary,"response == ""pre""",n_windows,0,0,windows tested for pre-recruits; exact
+ledger_rows_min,forecast_ledger,NA,NA,40,0,the ledger must never shrink (its row count is the expected value)
+timing_long_beach,survey_timing_by_beach,"beach == ""Long Beach""",median_doy,157,0,median survey day of year; exact
+timing_twin_harbors,survey_timing_by_beach,"beach == ""Twin Harbors""",median_doy,221,0,median survey day of year; exact
+linkage_pre_rec_copalis,cohort_linkage,"beach == ""Copalis""",r_pre_t_rec_t1,0.5800254020225727,1e-6,size-class cohort linkage; deterministic
+linkage_pre_rec_twin_harbors,cohort_linkage,"beach == ""Twin Harbors""",r_pre_t_rec_t1,-0.15753465646398215,1e-6,size-class cohort linkage; deterministic
+linkage_age1_age2_long_beach,cohort_linkage,"beach == ""Long Beach""",r_age1_t_age2_t1,0.8621159049789842,0.001,length-based linkage; EM fits are deterministic but platform numerics may move the last digits
+linkage_age1_age2_kalaloch,cohort_linkage,"beach == ""Kalaloch""",r_age1_t_age2_t1,0.5923373642732531,0.01,length-based linkage at the beach with the most fragile fits
+share_age1_above_76_all,cohort_separation_summary,"beach == ""All beaches""",mean_share_age1_above_76,0.25168489707464436,0.001,share of the year-old cohort above 76 mm
+growth_k_tracking_copalis,cohort_growth_increments_summary,"beach == ""Copalis""",K_tracking_Linf_fixed,1.021229186045066,0.001,growth coefficient from year-class tracking at the study beach
+growth_k_tracking_kalaloch,cohort_growth_increments_summary,"beach == ""Kalaloch""",K_tracking_Linf_fixed,0.4263623927413272,0.001,growth coefficient from year-class tracking at Kalaloch
+null_audit_sig_cells,null_audit_global,NA,observed_sig_p05,83,0,count of nominally significant cells in the legacy screen; exact
+null_audit_p_global,null_audit_global,NA,p_global,0.0715,0.02,surrogate-based global p; Monte Carlo tolerance
+beuti_pooled_estimate,confirmatory_pooled,"response == ""log_pre_next"" & predictor == ""beuti_larval"" & trend & !drop_kalaloch",estimate,-0.307358086853895,0.001,primary a priori BEUTI effect on pre-recruits (pooled LMM)
+beuti_pooled_p_lrt,confirmatory_pooled,"response == ""log_pre_next"" & predictor == ""beuti_larval"" & trend & !drop_kalaloch",p_lrt,0.1106867461556892,0.001,its LRT p
+beuti_coastwide_estimate,confirmatory_coastwide_index,"response == ""log_pre_next"" & predictor == ""beuti_larval""",estimate,-0.6163696993199792,0.001,coastwide GLS-AR(1) BEUTI effect
+beuti_coastwide_p_holm,confirmatory_coastwide_index,"response == ""log_pre_next"" & predictor == ""beuti_larval""",p_holm,0.05201563110902695,0.001,its Holm p
+beuti_lengthbased_coastwide,confirmatory_coastwide_lengthbased,"response == ""log_yc1_next"" & predictor == ""beuti_larval""",estimate,-0.6982094775423132,0.01,BEUTI effect on the length-based year-old cohort
+sst_regional_pooled,confirmatory_sst_beachlevel,"response == ""log_pre_next"" & predictor == ""sst_larval"" & !drop_kalaloch",estimate,0.04724662075565496,0.001,regional SST effect (a priori) in the beach-level comparison
+sst_mur_beach_pooled,confirmatory_sst_beachlevel,"response == ""log_pre_next"" & predictor == ""sst_larval_mur_beach"" & !drop_kalaloch",estimate,0.09638843814413144,0.001,MUR beach-level SST effect
+beuti_density_pooled,confirmatory_pooled_density,"response == ""log_pre_dens_next"" & predictor == ""beuti_larval"" & !drop_kalaloch",estimate,-0.3044748809741678,0.001,BEUTI effect on the density scale
+scan_pre_n_windows,window_scan_summary,"response == ""pre""",n_windows,1368,0,windows tested for pre-recruits; exact
 scan_pre_n_fwer,window_scan_summary,"response == ""pre""",n_fwer_sig,0,0,windows passing family-wise control (expected 0)
-scan_pre_null95,window_scan_summary,"response == ""pre""",null_max_abs_r_95,0,0.02,surrogate threshold; Monte Carlo tolerance
+scan_pre_null95,window_scan_summary,"response == ""pre""",null_max_abs_r_95,0.6681627866694895,0.02,surrogate threshold; Monte Carlo tolerance
 scan_rec_n_fwer,window_scan_summary,"response == ""rec""",n_fwer_sig,0,0,windows passing family-wise control for recruits (expected 0)
-skill_honest_pre,forecast_skill_cohort_framework,"series == ""All beaches"" & model == ""honest_scan""",skill_vs_climatology,0,0.02,honest-selection skill for year-class pre-recruits
-skill_trend_beuti_pre,forecast_skill_cohort_framework,"series == ""All beaches"" & model == ""trend_beuti""",skill_vs_climatology,0,0.02,a priori model skill
-skill_carryover_rec,forecast_skill_original_framework,"resp == ""Rec"" & model == ""carryover""",skill_vs_climatology,0,0.02,stock carry-over skill for recruits
+skill_honest_pre,forecast_skill_cohort_framework,"series == ""All beaches"" & model == ""honest_scan""",skill_vs_climatology,-0.7653571946062252,0.02,honest-selection skill for year-class pre-recruits
+skill_trend_beuti_pre,forecast_skill_cohort_framework,"series == ""All beaches"" & model == ""trend_beuti""",skill_vs_climatology,-0.1189790533353543,0.02,a priori model skill
+skill_carryover_rec,forecast_skill_original_framework,"resp == ""Rec"" & model == ""carryover""",skill_vs_climatology,0.23782171039965816,0.02,stock carry-over skill for recruits
