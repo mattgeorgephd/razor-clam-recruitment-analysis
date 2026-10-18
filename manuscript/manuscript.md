@@ -160,7 +160,7 @@ All analyses used log abundance. Pre-recruit and recruit abundance were never ze
 
 - A fixed protocol (`docs/forecast-protocol.md`) issues forecasts for the next survey year with prediction intervals, from models fixed in advance (for pre-recruits: climatology, trend, the a priori BEUTI model, and the exploratory candidate selected on the data available at issue; for recruits: climatology, persistence, the carry-over model, and the carry-over model with the harvest taken between the surveys removed), records them in a ledger with the issue date, code version and data vintage, and scores them on the log scale (error, 95% interval coverage, CRPS, skill versus climatology) when the estimates arrive. Rows are never overwritten.
 
-**Software.** Analyses used R 4.3.3 (R Core Team 2024 **[C]**) with tidyverse, nlme (Pinheiro & Bates **[C]**) and lme4 (versions recorded in the repository's `renv.lock`). Code and derived data are in the accompanying repository (`01_code/R/`, `02_data/derived/`); the full pipeline runs in about 9 minutes, random seeds are fixed, and a continuous-integration workflow reruns it and checks a set of key numbers against recorded values on every change.
+**Software.** Analyses used R 4.3.3 (R Core Team 2024 **[C]**) with tidyverse, nlme (Pinheiro & Bates **[C]**) and lme4 (versions recorded in the repository's `renv.lock`). Code and derived data are in the accompanying repository (`01_code/R/`, `02_data/derived/`); the full pipeline runs in about 5 minutes, random seeds are fixed, and a continuous-integration workflow reruns it and checks a set of key numbers against recorded values on every change.
 
 ## 3. Results
 

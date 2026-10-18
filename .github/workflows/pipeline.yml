@@ -1,7 +1,7 @@
 # Runs the robust re-analysis pipeline end to end and checks a curated set of
 # key numbers against 01_code/R/tests/expected_key_numbers.csv (task T30).
 # About 15 minutes: package install from the Posit binary mirror, then the
-# pipeline (2,000 surrogates, about 8 minutes). Package versions follow
+# pipeline (2,000 surrogates, about 5 minutes). Package versions follow
 # DESCRIPTION (Imports only); renv.lock records the exact versions used for the
 # committed outputs.
 name: pipeline

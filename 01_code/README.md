@@ -4,7 +4,7 @@ All analysis code. Run everything from the **repository root** (the folder with 
 
 ## `R/`: robust re-analysis pipeline (primary)
 
-`./run_pipeline.sh` (or `Rscript 01_code/R/run_all.R`) runs the scripts in order (~8 min), logs timing to `run_log.txt`, and compiles the report. Outputs go to `02_data/derived/` and `03_analyses/robust-reanalysis/`. Flags: `--fast`, `--steps=..`, `--from=..`, `--out=DIR`, `--vintage=current|cached` (which BEUTI/CUTI/PDO files feed the predictors; current is the default), `--no-report`, `--notebook`, `--install`, `--list`, `--help`.
+`./run_pipeline.sh` (or `Rscript 01_code/R/run_all.R`) runs the scripts in order (~5 min), logs timing to `run_log.txt`, and compiles the report. Outputs go to `02_data/derived/` and `03_analyses/robust-reanalysis/`. Flags: `--fast`, `--steps=..`, `--from=..`, `--out=DIR`, `--vintage=current|cached` (which BEUTI/CUTI/PDO files feed the predictors; current is the default), `--no-report`, `--notebook`, `--install`, `--list`, `--help`.
 
 | Script | Purpose | Main outputs |
 |---|---|---|
