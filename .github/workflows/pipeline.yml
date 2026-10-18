@@ -6,13 +6,20 @@
 # committed outputs.
 name: pipeline
 
+# Triggers: pull requests (one run per push to the PR branch), pushes to main,
+# and manual dispatch. A push to a branch with an open pull request runs once,
+# not twice, and a newer push cancels the run of an older one on the same ref.
 on:
   push:
-    branches: [main, 'claude/**']
+    branches: [main]
     paths-ignore: ['manuscript/**', 'docs/**', '**/*.md']
   pull_request:
     paths-ignore: ['manuscript/**', 'docs/**', '**/*.md']
   workflow_dispatch:
+
+concurrency:
+  group: pipeline-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   run:
